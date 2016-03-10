@@ -2,4 +2,4 @@
 
 Jocelyn made a change.
 
-Jane mde another.
+Jane made another.
