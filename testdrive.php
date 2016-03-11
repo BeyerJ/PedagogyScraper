@@ -2,11 +2,17 @@
 
 require_once 'autoload.php';
 
-//phpinfo();
+
 
 $university = new University();
+$university->babankdfjk = 'bob';
+echo $university->babankdfjk . "\n";
 
-var_dump($university);
+
+
+
+
+//var_dump($university);
 
 
 
