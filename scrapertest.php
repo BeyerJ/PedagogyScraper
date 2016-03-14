@@ -53,7 +53,7 @@ foreach ($xpath->query($query) as $key) {
 	}
 	foreach ($desc = $xpath->query($query3,$key) as $desc) {
 		echo $desc->nodeValue . "\n";
-}
+	}
 }
 
 
