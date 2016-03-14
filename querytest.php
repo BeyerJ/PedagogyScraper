@@ -1,39 +1,12 @@
 <?php
 require_once 'autoload.php';
 
-//This script is a template to help create xpath queries for a site 
+//This script is a template to help create xpath queries for a site
 
 
+//To see how example queries work, just uncomment lines have "example" in their comments
 
-/*
-//To try running this script, delete comment symbols from line 8 and line 34
-//An example query for a page at the University of Calgary:
-
-$page = 'http://www.ucalgary.ca/pubs/calendar/current/accounting.html';
-
-$xpath = URLPrompt::buildDOM($page); 
-
-$query = '(//table[tr/td[@class="myCell"]])'; // this query is designed to find and create a list of tags (table cells in this particular case) that each corresponds to a particular course.
-
-// An Xpath query returns a list of nodes. You can iterate through it like through an array (note, though, that trying to access paricular items using an indexwon't work). Instead, use a foreach loop to iterate through it.
-
-foreach ($xpath->query($query) as $cell) { // this loop is looking through the list of cells, each of which holds information about one course
-	//once you have a list of courses, you can use an XPath query to look through that list specifically, and access various fields in each cell, for example:
-
-	$code_query = './/*[@class="course-code"]'; // this query asks to find any tags amongs the descendants that have an attribute called "class" with value "course-code"
-	foreach ($xpath->query($code_query, $cell) as $course) { // this is looking through the cell, which holds one course 
-		echo $course->nodeValue . "\n"; // echo whatever's the textual content inside the node we found using class "course-code"
-	}
-
-	$desc_query = './/*[@class="course-desc"]'; // this is looking at descendants with attribute "class" labeled "course-desc"
-	foreach ($xpath->query($desc_query, $cell) as $desc) { // this is looking through the same cell, but echoes the course description
-		echo $desc->nodeValue . "\n";
-	}
-}
-
-*/
-
-// Build your own template qith queries to scrape a page:
+// Build your own template with queries to scrape a page:
 // The url of the site you are looking at:
 $url = '';
 
@@ -64,9 +37,9 @@ foreach ($xpath->query($course_query) as $course) {
 	echo "-------------\n";
 	*/
 
+
+
 	//Now that you've gotten a list of elements corresponding to courses, you can write specific queries to grab course data that we need for the database
-
-
 
 	$course_title_query = './'; //query to find the course title
 	//$course_title_query = './/*[contains(@id, "cnTitle")]'; //example for University of Calgary
