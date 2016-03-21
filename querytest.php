@@ -18,6 +18,9 @@ $xpath = URLPrompt::buildDOM($url); // This builds an Xpath object that you can 
 
 $course_query = ''; //enter your general query here
 //$course_query = '(//table[tr/td[@class="myCell"]])'; //example for University of Calgary
+// UNB? //table[tbody/tr/td/course_description/p]
+// USASK? //div[div/div[2]/div[@div="results"]]
+// Western DO WESTERN //table[tbody/tr[2]/td[@div="item-container"]]
 
 $results_num = 0; //this variable will track the number of results you got with your query
 foreach ($xpath->query($course_query) as $course) {
