@@ -1,10 +1,13 @@
 <?php
 
+require_once 'autoload.php';
+
 class ApplicationStatus {
-	protected url;
-	protected university;
-	protected courses[];
-	protected programs[];
+
+	protected $url;
+	protected $university;
+	protected $courses = array();
+	protected $programs = array();
 
 
 
