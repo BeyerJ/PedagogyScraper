@@ -10,29 +10,15 @@ const SELECT_SCRAPER_PROMPT = "Which scraper would you like to use?\n";
 const FIRST_ENTRY = "The first entry of the scraper is:\n";
 const ANOTHER_ENTRY_PROMPT = "Would you like to see another entry?\n";
 const REPLY_TO_YES = "Awesome! Let me do the thing!\n";
+const SCRAPER_REPORT_PROMPT = "The following scrapers are available:\n";
+const SAVE_RESULTS_PROMPT = "Would you like to save the results of this scrape?\n";
+const WILL_SAVE = "I shall do that then\n";
+const YES_NO_PROMPT = "Please answer yes or no \n";
+const NEW_SCRAPE = "Would you like to start a scrape?\n";
+//const = "";
 
 /******METHODS******/
 
-/*
-
-// Will need to test with a DB Connection
-public function __construct() {
-		//building a connection with a database -- the pipeline is an object
-		//our DBConnection class creates a static connection and always returns the same one once it's created
-		//we're using default $id=-1 because we want our constructor to grab data from the database
-		//if the object already exists
-		//or create a new one and push it to the database if it doesn't
-		
-		$this->mysql = DBConnection::getConnection();
-		if (empty($this->mysql)) {
-			echo "something went wrong\n";
-		}
-
-		//add properties to the properties array, pulling them from the database table (the columns)
-		$this->initializeFromDatabase();
-}
-
-*/
 
 //Prompt user for input using a $prompt string.
 //Check if the script is run on a Windows machine (readline doesn't work on Win).
@@ -55,7 +41,7 @@ public function askForURL() {
 
 // Choose Scraper (asking the user)
 public function chooseScraper($scrapers) {
-	echo "The following scrapers are available:\n";
+	echo self::SCRAPER_REPORT_PROMPT;
 	foreach ($scrapers as $scraper) {
 		echo $scraper . "\n";
 	}
@@ -74,15 +60,17 @@ public function displayResults($results) {
 	echo self::FIRST_ENTRY;
 	$i = 0;
 	echo $results[$i] . "\n";
-	self::questionYN(self::ANOTHER_ENTRY_PROMPT, self::REPLY_TO_YES);
-	$e = count($results);
-	$i = rand(1 ,$e);
-	echo $results[$i] . "\n";
+	if (self::questionYN(self::ANOTHER_ENTRY_PROMPT, self::REPLY_TO_YES) == true) {
+		$e = count($results);
+		$i = rand(1 ,$e);
+		echo $results[$i] . "\n";
+	}
+	
 }
 
 // save results (this needs work)
 public function saveResults() {
-	self::questionYN('Would you like to save the results of this scrape?', 'I shall do that then');
+	self::questionYN(self::SAVE_RESULTS_PROMPT, self::WILL_SAVE);
 	/// send the relevant object to the db stuff?
 }
 
@@ -91,7 +79,11 @@ public function saveResults() {
 
 
 // scrape another?
-
+public function startScrape() {
+	if (self::questionYN(self::NEW_SCRAPE, self::REPLY_TO_YES) == true) {
+		self::askForURL();
+	}
+}
 
 
 // ask yes or no question
@@ -100,12 +92,13 @@ public function questionYN($prompt1, $prompt2) {
 	while ($answer != 'yes') {
 		$answer = self::userPrompt($prompt1);
 		if ($answer == 'no') {
-			exit;
+			return false;
 		} else {
-			"Please answer yes or no \n";
+			echo self::YES_NO_PROMPT;
 		}
 	}
 	echo $prompt2;
+	return true;
 }
 
 }
