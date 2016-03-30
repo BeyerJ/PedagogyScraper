@@ -1,6 +1,7 @@
 <?php
 
 require_once 'autoload.php';
+include_once '/scraperscripts/GeneralScraper.php';
 
 //For lack of a better solution this is going to be the main script that calls methods from the various classes
 //This is where the majority of function and method calls form the flowchart would go.
@@ -11,59 +12,58 @@ $UI = null;
 $STATUS = null;
 $university = null;
 
+$endscrape = true;
+
 /*********************
 USER STARTS THE SCRIPT
 **********************/
 
-//Create UserInterface
-$UI = new UserInterface();
-//Create ApplicationStatus
-$STATUS = new ApplicationStatus();
-
-//Ask for the general URL, using a method from UserInterface
-$catalog_url = $UI->askForURL();
-
-
-//If the method returned FALSE, stop the script
-if(!$catalog_url) {
-	exit;
-}
-
-//Save the URL to the ApplicationStatus
-$STATUS->$url = $catalog_url;
-
+// Jocelyn -> I am moving this to the General Scraper
 /* 
-
-University Object Stuff
-
+		//Create UserInterface
+		$UI = new UserInterface();
+		//Create ApplicationStatus
+		$STATUS = new ApplicationStatus();
 */
 
+// Make a General Scraper to begin
+	$general = new GeneralScraper();
 
-// create university object
+while ($endscrape == true) {
+	$endscrape = null;
+	$url = $general->newScrape();
+	$general->buildDOM($url);
 
-$university = new University();
+	/* 
 
-// scrape university info (name and such)
+	University Object Stuff
 
-// output object to console
+	*/
+	$query = '(//@alt)'; 
+	$title = $general->scrapeUniversityInfo($query);
+	echo "the title is " . $title . "\n";
 
-// ask user if ok
+	$query1 = '(//@alt)'; 
+	$country = $general->scrapeUniversityInfo($query1);
+	echo "the country is " . $country . "\n";
 
-// if no let user edit field by field
+	$query2 = '(//@alt)'; 
+	$province = $general->scrapeUniversityInfo($query2);
+	echo "the title is " . $province . "\n";
 
-// once done ask to push to database
+	$query3 = '(//@alt)'; 
+	$type = $general->scrapeUniversityInfo($query3);
+	echo "the title is " . $type . "\n";
 
-// check if database already has that university
+	// create university object
 
-// if university exists retrieve from database and ask user if it should just use this
+	//$university = new University();
 
-// use new record or create record
+	$endscrape = $general->UI->startScrape();
 
-// if the university is not in database create an entry with appropriate queries
+}
 
-// return id of university
 
-// save id to university objects's properties
 
 
 
