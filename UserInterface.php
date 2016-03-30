@@ -80,25 +80,35 @@ public function saveResults() {
 
 // scrape another?
 public function startScrape() {
-	if (self::questionYN(self::NEW_SCRAPE, self::REPLY_TO_YES) == true) {
-		self::askForURL();
-	}
+	$answer = self::questionYN(self::NEW_SCRAPE, self::REPLY_TO_YES);
+	if ($answer == true) {
+			self::askForURL();
+		} else {
+			return false;
+		}
 }
 
 
 // ask yes or no question
 public function questionYN($prompt1, $prompt2) {
-	$answer = '';
-	while ($answer != 'yes') {
+	$answer = null;
+	$incorrect = null;
+	while ($incorrect == null) {
 		$answer = self::userPrompt($prompt1);
 		if ($answer == 'no') {
+			$incorrect = false;
+			echo "the answer was no\n";
 			return false;
+		} elseif ($answer == 'yes') {
+			echo $prompt2;
+			$incorrect = false;
+			return true;
+			
 		} else {
 			echo self::YES_NO_PROMPT;
 		}
 	}
-	echo $prompt2;
-	return true;
+	
 }
 
 }
