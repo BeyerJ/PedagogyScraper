@@ -18,6 +18,27 @@ class University extends CalendarObject {
 
 
 
+// output object to console
+
+// ask user if ok
+
+// if no let user edit field by field
+
+// once done ask to push to database
+
+// check if database already has that university
+
+// if university exists retrieve from database and ask user if it should just use this
+
+// use new record or create record
+
+// if the university is not in database create an entry with appropriate queries
+
+// return id of university
+
+// save id to university objects's properties
+
+
 
 
 
