@@ -1,7 +1,7 @@
 <?php
 
 require_once 'autoload.php';
-include_once '/scraperscripts/GeneralScraper.php';
+//include_once '/scraperscripts/GeneralScraper.php';
 
 //For lack of a better solution this is going to be the main script that calls methods from the various classes
 //This is where the majority of function and method calls form the flowchart would go.
@@ -11,8 +11,8 @@ $catalog_url = null;
 $UI = null;
 $STATUS = null;
 $university = null;
+$keep_scraping = true;
 
-$endscrape = true;
 
 /*********************
 USER STARTS THE SCRIPT
@@ -29,20 +29,22 @@ USER STARTS THE SCRIPT
 // Make a General Scraper to begin
 	$general = new GeneralScraper();
 
-while ($endscrape == true) {
-	$endscrape = null;
+while ($keep_scraping == true) {
 	$url = $general->newScrape();
+	echo "You have given me a URL\n";
 	$general->buildDOM($url);
-
+	echo "I build a DOM object\n";
 	/* 
 
 	University Object Stuff
 
 	*/
 	$query = '(//@alt)'; 
+	echo "I have a query\n";
 	$title = $general->scrapeUniversityInfo($query);
 	echo "the title is " . $title . "\n";
-
+	echo "Also I scraped a thing\n";
+/*
 	$query1 = '(//@alt)'; 
 	$country = $general->scrapeUniversityInfo($query1);
 	echo "the country is " . $country . "\n";
@@ -54,12 +56,15 @@ while ($endscrape == true) {
 	$query3 = '(//@alt)'; 
 	$type = $general->scrapeUniversityInfo($query3);
 	echo "the title is " . $type . "\n";
-
+*/
 	// create university object
 
 	//$university = new University();
-
-	$endscrape = $general->UI->startScrape();
+	$answer = $general->UI->startScrape();
+	if ($answer == false) {
+		$keep_scraping = false;
+		echo "I dont wanna\n";
+	}
 
 }
 

@@ -82,7 +82,7 @@ public function saveResults() {
 public function startScrape() {
 	$answer = self::questionYN(self::NEW_SCRAPE, self::REPLY_TO_YES);
 	if ($answer == true) {
-			self::askForURL();
+			return true;
 		} else {
 			return false;
 		}
@@ -91,17 +91,14 @@ public function startScrape() {
 
 // ask yes or no question
 public function questionYN($prompt1, $prompt2) {
-	$answer = null;
-	$incorrect = null;
-	while ($incorrect == null) {
+	$asking = true;
+	while ($asking) {
 		$answer = self::userPrompt($prompt1);
 		if ($answer == 'no') {
-			$incorrect = false;
 			echo "the answer was no\n";
 			return false;
 		} elseif ($answer == 'yes') {
 			echo $prompt2;
-			$incorrect = false;
 			return true;
 			
 		} else {
