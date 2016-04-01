@@ -53,7 +53,7 @@ class Application {
 		//check if the header contains 404, 403 or 500, exit; otherwise return url
 	}
 
-
+	// Lets the user change one property of a university object, though I bet it could do any child of the CalendarObject, needs testing
 	public function editProperty($property, $university) {
 		echo $property . " is equal to " . $university->$property . "\n";
 		$new_value = UserInterface::userPrompt("What would you like to change " . $property . " to?\n");
@@ -65,11 +65,16 @@ class Application {
 				$university->$property = $new_value;
 				echo "I have changed " . $property . " to " . $university->$property . "\n";
 				$editing = false;
-			}
-			
+			} else {
+				$new_value = UserInterface::userPrompt("What would you like to change " . $property . " to?\n");
+				$answer = UserInterface::questionYN($check, "I'll change it then\n");
+			}	
 		}
-
 	}
+
+
+
+
 
 } 
 

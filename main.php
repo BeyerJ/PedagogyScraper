@@ -28,8 +28,22 @@ USER STARTS THE SCRIPT
 
 // Make a General Scraper to begin
 	$general = new GeneralScraper();
+	$ui = new UserInterface();
+	$app = new Application();
 
 while ($keep_scraping == true) {
+
+	// I attempted to make it so the user can input all the info for the university to start, but it keeps saying the properties 
+	// do not exist. I think it is looking at the values and not the keys, which seems wierd
+	// but you can change things which is exciting
+	// unless my method changes the name of the key and not the value. Shit
+	$university = new University();
+	foreach ($university->properties as $property) {
+		$app->editProperty($property, $university);
+	}
+	
+	
+
 	$url = $general->newScrape();
 	echo "You have given me a URL\n";
 	$general->buildDOM($url);
@@ -37,9 +51,7 @@ while ($keep_scraping == true) {
 	/* 
 
 	University Object Stuff
-
-	*/
-	$query = '(//@alt)'; 
+$query = '(//@alt)'; 
 	echo "I have a query\n";
 	$title = $general->scrapeUniversityInfo($query);
 	echo "the title is " . $title . "\n";
@@ -57,7 +69,11 @@ while ($keep_scraping == true) {
 	$type = $general->scrapeUniversityInfo($query3);
 	echo "the title is " . $type . "\n";
 */
+
+	
 	// create university object
+	
+
 
 	//$university = new University();
 	$answer = $general->UI->startScrape();
