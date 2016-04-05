@@ -1,8 +1,11 @@
 <?php
 
-$path = '.\scraperscripts';
+$path = array('.\scraperscripts', '.\results');
 
-set_include_path(get_include_path() . PATH_SEPARATOR . $path);
+for ($i=0; $i < count($path); $i++) { 
+	set_include_path(get_include_path() . PATH_SEPARATOR . $path[$i]);
+}
+
 
 function __autoload($classname) {
 	$filename = $classname . '.php';
