@@ -15,6 +15,8 @@ const SAVE_RESULTS_PROMPT = "Would you like to save the results of this scrape?\
 const WILL_SAVE = "I shall do that then\n";
 const YES_NO_PROMPT = "Please answer yes or no \n";
 const NEW_SCRAPE = "Would you like to start a scrape?\n";
+const EDIT_DATA = "Would you like to edit a property?\n";
+const EDIT_CHOOSE = "Which property would you like to edit?\n";
 //const = "";
 
 /******METHODS******/
@@ -100,13 +102,26 @@ public function questionYN($prompt1, $prompt2) {
 		} elseif ($answer == 'yes') {
 			echo $prompt2;
 			return true;
-			
 		} else {
 			echo self::YES_NO_PROMPT;
 		}
 	}
 	
 }
+
+
+public function editEntry() {
+	$answer = self::questionYN(self::EDIT_DATA, self::REPLY_TO_YES);
+	if ($answer == true) {
+		$property = self::userPrompt(self::EDIT_CHOOSE);
+		echo $property . " is the thing you chose to edit\n";
+		return $property;
+	}
+}
+
+
+
+
 
 }
 

@@ -1,6 +1,6 @@
 <?php
 
-$path = 'C:/Users/Jocelyn/Documents/SchoolWork/Scraper/scraperscripts';
+$path = '.\scraperscripts';
 
 set_include_path(get_include_path() . PATH_SEPARATOR . $path);
 

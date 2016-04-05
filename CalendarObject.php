@@ -46,7 +46,7 @@ class CalendarObject {
 		if (array_key_exists($varname, $this->properties)) {
 			return $this->properties[$varname];
 		} else {
-			echo $this->properties[$varname] . " does not exist\n";
+			echo $varname . " does not exist\n";
 			return null;
 		}
 		// return $this->properties[$varname]; This is going to spew out an error if the key doesn't exist in the array.
@@ -60,9 +60,17 @@ class CalendarObject {
 		if (array_key_exists($varname, $this->properties)) {
 			$this->properties[$varname] = $value;
 		} else {
-			echo $this->properties[$varname] . " does not exist\n";
+			echo "The property " . $varname . " does not exist\n";
 		}
 	}
+
+	// Displays the properties of the object
+	public function showProperties() {
+		foreach($this->properties as $property => $value) {
+			echo $property . ": " . $value . "\n";
+		}
+	}
+
 
 
 

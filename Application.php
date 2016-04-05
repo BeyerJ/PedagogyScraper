@@ -8,8 +8,7 @@ class Application {
 	protected $university;
 	protected $courses = array();
 	protected $programs = array();
-
-
+	public $UI;
 
 	public function __get ($varname) {
 		//if the keyname exists in the array, then return it
@@ -109,6 +108,25 @@ class Application {
 		return $xpath;
 	}
 
+
+	// Lets the user change one property of a university object, though I bet it could do any child of the CalendarObject, needs testing
+	public function editProperty($property, $university) {
+		echo $property . " is equal to " . $university->$property . "\n";
+		$new_value = UserInterface::userPrompt("What would you like to change " . $property . " to?\n");
+		$check = "You chose " . $new_value . ", is this ok?\n";
+		$editing = true;
+		while ($editing) {
+			$answer = UserInterface::questionYN($check, "I'll change it then\n");
+			if ($answer == true) {
+				$university->$property = $new_value;
+				echo "I have changed " . $property . " to " . $university->$property . "\n";
+				$editing = false;
+			} else {
+				$new_value = UserInterface::userPrompt("What would you like to change " . $property . " to?\n");
+				$answer = UserInterface::questionYN($check, "I'll change it then\n");
+			}	
+		}
+	}
 
 } 
 

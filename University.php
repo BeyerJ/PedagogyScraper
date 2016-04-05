@@ -5,7 +5,7 @@ require_once 'autoload.php';
 
 class University extends CalendarObject {
 	protected $table = "university";
-	protected $properties = array(
+	public $properties = array(
 			'id' => null,
 			'university_title' => null,
 			'country' => null,
@@ -16,13 +16,14 @@ class University extends CalendarObject {
 			'updated' => null
 			);
 
-
+/// whois command thing
 
 // output object to console
-
+	
 // ask user if ok
 
 // if no let user edit field by field
+	// I did this in Application (I think)
 
 // once done ask to push to database
 
