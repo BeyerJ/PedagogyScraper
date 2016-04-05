@@ -1,15 +1,5 @@
 <?php
 
-	
-		if (PHP_OS == 'WINNT') {
-			require_once("/../autoload.php");
-		} else {
-			require_once '../autoload.php';
-		}
-	
-
-//include_once("../");
-
 // they need names or ids
 // check if applicable method (all children will have this but add to it)
 
@@ -24,6 +14,31 @@ class GeneralScraper
 	public $UI;
 	public $STATUS;
 	public $xpath;
+
+
+
+
+	public function goToLink ($xpath, $querytolink) {
+		//find link (for example, to next page), then follow it, return xpath for new page
+	}
+
+
+	public function findLinks ($xpath, $querytolinks) {
+		//find all links using the query provided, then return an array of links
+	}
+
+
+	public function loopOnLinks ($func, $linksarray) {
+		foreach ($linksarray as $link) {
+			$func($link);
+		}
+	}
+
+	
+
+	public function echoHello ($hello) {
+		echo "Hello " . $hello;
+	}
 
 
 	// Prompts
@@ -64,7 +79,9 @@ class GeneralScraper
 		return $catalog_url;
 	}
 	
-	// Build DOM Object 
+	// Build DOM Object
+	//TRANSFERED THIS METHOD TO THE APPLICATION CLASS
+/*
 	public function buildDOM($url = NULL) {
 		if (empty($url)) {
 			$url = $this->STATUS->$url;
@@ -79,11 +96,11 @@ class GeneralScraper
 		return $this->xpath;
 
 	}
+*/
 
 // scrape university info (name and such) (because every one should do this) (maybe, fuck I don't know)
 	public function scrapeUniversityInfo($query) {
 		$uni = new University();
-		$info = '';
 		$alt = $this->xpath->query($query);
 
 		foreach ($alt as $value) {
