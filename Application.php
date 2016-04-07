@@ -10,6 +10,7 @@ class Application {
 	protected $programs = array();
 	public $UI;
 
+	//FIX THIS! NO PROPERTIES ARRAY, SO THIS WON'T WORK
 	public function __get ($varname) {
 		//if the keyname exists in the array, then return it
 		//otherwise return null
@@ -23,7 +24,7 @@ class Application {
 
 	//SETTERS
 
-
+	//FIX THIS! NO PROPERTIES ARRAY, SO THIS WON'T WORK
 	public function __set ($varname, $value) {
 		//if the keyword exist in the properties array, set it to be the value
 		if ($varname == "url") {

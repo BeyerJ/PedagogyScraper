@@ -3,11 +3,21 @@
 require_once 'autoload.php';
 
 $app = new Application;
-$urls = array('http://www.ucalgary.ca/pubs/calendar/current/accounting.html','http://www.ucalgary.ca/pubs/calendar/current/african-studies.html');
+$urls = array('http://www.ucalgary.ca/pubs/calendar/current/course-desc-main.html', 'http://www.ucalgary.ca/pubs/calendar/current/accounting.html','http://www.ucalgary.ca/pubs/calendar/current/african-studies.html');
 
 //THIS IS HOW YOU WOULD CALL A METHOD IN THE GENERAL SCRAPER CLASS
 //NOTE THAT YOU'RE PASSING A _FUNCTION_ AS A PARAMETER
-GeneralScraper::loopOnLinks(echoCourses, $urls);
+//GeneralScraper::loopOnNodes(echoCourses, $urls);
+
+
+
+
+$uofc_scr = new UofCalgaryScraper();
+$uofc_scr->xpath = $app->takeUrlReturnXpath($urls[0]);
+$uofc_scr->url = $urls[0];
+$uofc_scr->scrapeCatalogPage();
+
+print_r($uofc_scr->courses);
 
 
 //THIS IS A FUNCTION TO TEST 
