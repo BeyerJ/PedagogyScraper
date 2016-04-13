@@ -5,7 +5,7 @@ require_once 'autoload.php';
 
 class Course extends CalendarObject {
 	protected $table = "course";
-	protected $properties = array(
+	public $properties = array(
 			'id' => null,
 			'university_id' => null,
 			'course_title' => null,

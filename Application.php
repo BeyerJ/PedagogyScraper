@@ -9,6 +9,13 @@ class Application {
 	protected $courses = array();
 	protected $programs = array();
 	public $UI;
+	protected $scrapers = array();
+
+
+	public function __construct () {
+		$scr = new UofCalgaryScraper();
+		$this->scrapers[$scr->id] = $scr;
+	}
 
 	//FIX THIS! NO PROPERTIES ARRAY, SO THIS WON'T WORK
 	public function __get ($varname) {
@@ -60,6 +67,7 @@ class Application {
 		curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+		curl_setopt($ch, CURLOPT_USERAGENT, 'PedagogyScraperbot/1.0 (+http://github.com/BeyerJ/PedagogyScraper)');
 		$data = curl_exec($ch);
 		curl_close($ch);
 		return $data;
