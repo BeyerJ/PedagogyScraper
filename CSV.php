@@ -13,6 +13,7 @@ class CSV
 	protected $university;
 	protected $courses = array();
 
+	const PAUSED_SCRAPES = 'results/paused_scrapes.csv';
 	
 	// Should I make it so that if the file exists already I add a number or something?
 	
@@ -75,6 +76,7 @@ class CSV
 		print_r($row);
 			//UserInterface::makeReadable($row);
 		}
+		fclose($pipeline);
 	}
 
 	// uses the commandline as the file to input, so in same format as what would go into csv and is echoed to user
@@ -85,6 +87,19 @@ class CSV
 		}
 		fclose($stdout);
 		}
+
+	// gets an assoc array of the saved scrapes so the UI can echo them and the user can select one to pull and push into the database after they have edited the information
+	public function readPaused() {
+		$pipeline = fopen('results/paused_scrapes.csv', 'r');
+		$list = array();
+		$i = 0;
+		while($row = fgetcsv($pipeline, 2000)) {
+			$list[$i] = $row[0];
+			$i++;
+		}
+		fclose($pipeline);
+		return $list;
+	}
 
 	// writes the university and course objects into the csv
 	public function writeObjects() {
@@ -123,14 +138,33 @@ class CSV
 				$key = $keys[$i];
 				$edited_course[$key] = $course[$i];
 			}
-			
 			$edited_courses[$e] = $edited_course;
 			$e++;
 		}
 		unset($edited_courses[0]);
 		unset($edited_courses[1]);
+		fclose($pipeline);
 		return $edited_courses;
 	}
+
+	// will check if there is a file for saved course info, from a paused scrape. if not it will make it
+	// this might be a useless function oops 
+	public function checkFile($file) {
+		if (file_exists($file)) {
+			return true;
+		} else {
+			$pipeline = fopen($file , 'w');
+		}
+	}
+
+	public function pauseScrape() {
+		$pipeline = fopen(self::PAUSED_SCRAPES, 'a');
+		$saved_file = array($this->filename);
+		fputcsv($pipeline, $saved_file);
+		fclose($pipeline);
+		echo "The scrape of " . $this->university->university_title . " has been paused and the data has been saved to " . $this->filename . "\n";
+	}
+
 
 }
 
