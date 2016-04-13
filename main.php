@@ -50,27 +50,6 @@ while ($keep_scraping == true) {
 	echo "I build a DOM object\n";
 	/* 
 
-	University Object Stuff
-$query = '(//@alt)'; 
-	echo "I have a query\n";
-	$title = $general->scrapeUniversityInfo($query);
-	echo "the title is " . $title . "\n";
-	echo "Also I scraped a thing\n";
-/*
-	$query1 = '(//@alt)'; 
-	$country = $general->scrapeUniversityInfo($query1);
-	echo "the country is " . $country . "\n";
-
-	$query2 = '(//@alt)'; 
-	$province = $general->scrapeUniversityInfo($query2);
-	echo "the title is " . $province . "\n";
-
-	$query3 = '(//@alt)'; 
-	$type = $general->scrapeUniversityInfo($query3);
-	echo "the title is " . $type . "\n";
-*/
-
-	
 	// create university object
 	
 

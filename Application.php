@@ -6,7 +6,7 @@ class Application {
 
 	protected $url;
 	protected $university;
-	protected $courses = array();
+	public $courses = array();
 	protected $programs = array();
 	public $UI;
 	protected $scrapers = array();
@@ -16,6 +16,8 @@ class Application {
 		$scr = new UofCalgaryScraper();
 		$this->scrapers[$scr->id] = $scr;
 	}
+
+	protected $mysql;
 
 	//FIX THIS! NO PROPERTIES ARRAY, SO THIS WON'T WORK
 	public function __get ($varname) {
@@ -48,6 +50,36 @@ class Application {
 		return $string;
 	}
 
+	public function getDBConn() {
+		$this->mysql = DBConnection::getConnection();
+	}
+
+	// takes an array and puts it in the table of your choice
+	public function pushInsert($table, $value_array) {
+		$table_keys = '';
+		$table_values = '';
+		foreach ($value_array as $key => $value) {
+			$table_keys = $table_keys . $key . ",";
+			$table_values = $table_values . "'" . $value . "'" . ",";
+		}
+		$table_keys = rtrim($table_keys, ",");
+		$table_values = rtrim($table_values, ",");
+		$query = "INSERT INTO $table ($table_keys) VALUES ($table_values) ";
+		//$this->mysql->query($query);
+		echo $query . "\n";
+	}
+
+
+	public function pushCourses($table) {
+		for ($i=0; $i < count($this->courses); $i++) { 
+			$properties = $this->courses[$i]->properties;
+			self::pushInsert($table, $properties);
+		}
+	}
+
+	public function __toArray() {
+
+	}
 
 	public function urlIsValid ($url) {
 		//TODO!
@@ -135,6 +167,13 @@ class Application {
 				$answer = UserInterface::questionYN($check, "I'll change it then\n");
 			}	
 		}
+	}
+
+	// choose random result (has class property - courses or course objects)
+	public function randomCourse() { // fix this 
+		$e = count($this->courses); // movelogic for random to application 
+		$i = rand(1 ,$e);
+		return $this->courses[$i];
 	}
 
 } 
