@@ -10,6 +10,7 @@ class Course extends CalendarObject {
 			'university_id' => null,
 			'course_title' => null,
 			'course_subtitle' => null,
+			//'course_faculty' => null,
 			'course_lettercode' => null,
 			'course_number' => null,
 			'course_code' => null,
