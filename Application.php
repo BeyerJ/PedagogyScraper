@@ -6,21 +6,24 @@ class Application {
 	public $on;
 	protected $url;
 	protected $xpath;
-	protected $university_id;
 	protected $university;
 	protected $courses = array();
 	protected $programs = array();
 	protected $available_scrapers = ['AcalogScraper', 'UofCalgaryScraper'];
 	protected $scrapers = array();
 	protected $chosen_scraper;
+	protected $mysql;
 	protected $menu_items = array(
 		"0" => "Show status",
 		"1" => "Input a URL",
-		"2" => "Run a test scrape",
-		"3" => "Attempt a manual scrape",
-		"4" => "Reset scraper queries to default values",
-		"5" => "Output courses to CSV",
-		"6" => "Load CSV to Database",
+		"2" => "Select university",
+		"3" => "Run a test scrape",
+		"4" => "Attempt a manual scrape",
+		"5" => "Reset scraper queries to default values",
+		"6" => "Run a scrape with current queries",
+		"7" => "Push courses to Database",
+		"8" => "Output courses to CSV",
+		"9" => "Load CSV to Database",
 		"e" => "Exit"
 	);
 
@@ -31,30 +34,7 @@ class Application {
 			$scr = new $scraper_class;
 			$this->scrapers[$scr->id] = $scr;
 		}
-	}
-
-	protected $mysql;
-
-	//FIX THIS! NO PROPERTIES ARRAY, SO THIS WON'T WORK
-	public function __get ($varname) {
-		//if the keyname exists in the array, then return it
-		//otherwise return null
-		//this is sometimes called a WHITELIST
-		if ($varname == "url") {
-			return $this->properties[$varname];
-		} else {
-			return null;
-		}
-	}
-
-	//SETTERS
-
-	//FIX THIS! NO PROPERTIES ARRAY, SO THIS WON'T WORK
-	public function __set ($varname, $value) {
-		//if the keyword exist in the properties array, set it to be the value
-		if ($varname == "url") {
-			$this->properties[$varname] = $value;
-		}
+		$this->getDBConn();
 	}
 
 
@@ -66,9 +46,10 @@ class Application {
 		return $string;
 	}
 
-		public function __toArray() {
 
-	}
+	/*************************************
+	METHODS FOR CONNECTING TO THE DATABASE
+	**************************************/
 
 	public function getDBConn() {
 		if (!$this->mysql) {
@@ -76,7 +57,7 @@ class Application {
 		}
 	}
 
-	// takes an array and puts it in the table of your choice
+	// takes an array and a table name, creates 
 	public function pushInsert($table, $value_array) {
 		$table_keys = self::makeTableKeys($value_array);
 		$table_values = self::makeTableValues($value_array);
@@ -86,6 +67,7 @@ class Application {
 	}
 
 
+	// ?????
 	public function pushCourses($table) {
 		for ($i=0; $i < count($this->courses); $i++) { 
 			$properties = $this->courses[$i]->properties;
@@ -122,6 +104,7 @@ class Application {
 	}
 
 
+	//check if the url is valid
 	public function urlIsValid ($url) {
 		//TODO!
 		$well_formed = filter_var($url, FILTER_VALIDATE_URL);
@@ -130,9 +113,13 @@ class Application {
 			return false;
 		}
 		return true;
-		//$headers = @get_headers($url);
-		//check if the header contains 404, 403 or 500, exit; otherwise return url
 	}
+
+
+
+	/************************************
+	METHODS FOR BUILDING XPATH OUT OF URL
+	*************************************/
 
 	//get text HTML data from a url using cURL
 	public function getDataFromURL($url) {
@@ -159,7 +146,7 @@ class Application {
 		return $xpath;
 	}
 
-
+	//call tidy on an html string
 	public function tidyHtml($html) {
 		$config = array(
            'indent'         => true,
@@ -184,12 +171,22 @@ class Application {
 	}
 
 
+	//takes a url, calls getDataFromURL to curl data from it
+	//then runs it through tidy using tidyHtml
+	//then creates a dom and xpath object for it, using buildDomFromHtml
 	public function takeUrlReturnXpath ($url) {
 		$dirty_html = self::getDataFromURL($url);
 		$tidy_html = self::tidyHtml($dirty_html);
 		$xpath = self::buildDomFromHtml($tidy_html);
 		return $xpath;
 	}
+
+
+	/*******************************************
+	METHODS FOR SETTING UP THE UNIVERSITY OBJECT
+	********************************************/
+
+
 
 
 	// Lets the user change one property of a university object, though I bet it could do any child of the CalendarObject, needs testing
@@ -213,10 +210,53 @@ class Application {
 
 	// choose random result (has class property - courses or course objects)
 	public function randomCourse() { // fix this 
-		$e = count($this->courses); //  
-		$i = rand(1 ,$e);
+		$e = count($this->courses) - 1; //  
+		$i = rand(0 ,$e);
 		return $this->courses[$i];
 	}
+
+
+
+	public function addInfo($ui) {
+		$start = $ui->questionYN(UserInterface::UNI_INFO_PROMPT, "Good Choice\n");
+		if ($start) {
+			foreach ($this->properties as $key => $value) {
+				echo UserInterface::UNI_INFO;
+				$prompt = 'Enter info for ' . $key . "\n";
+				$answer = $ui->userPrompt($prompt);
+				$this->properties[$key] = $answer;
+
+			}
+		//return $this->properties;
+		}
+		
+	}
+
+
+	/*********************
+	METHODS FOR MAIN MENU
+	*********************/
+
+	public function showStatus() {
+		if ($this->url) {
+			echo "-- Current URL: " . $this->url . "\n";
+		} else {
+			echo "-- No URL chosen.\n";
+		}
+		if ($this->chosen_scraper) {
+			echo "-- Chosen scraper: '" . $this->chosen_scraper->name . "' (class: " . get_class($this->chosen_scraper) . ")\n";
+		} else {
+			echo "-- No scraper chosen.\n";
+		}
+		if ($this->university) {
+			echo "-- University information: \n";
+			echo $this->university;
+		} else {
+			echo "-- No university set up.\n";
+		}
+
+	}
+
 
 
 	public function mainMenu() {
@@ -225,7 +265,7 @@ class Application {
 		switch ($user_command) {
 			case "0":
 				echo "***************\nSTATUS\n***************\n";
-				echo "I'm scraper, hello.\n\n\n";
+				$this->showStatus();
 				break;
 			case "1":
 				echo "***************\nENTERING NEW URL\n***************\n";
@@ -247,16 +287,18 @@ class Application {
 						echo UserInterface::NO_SCRAPER;
 						$this->url = null;
 					}
-				$answer = UserInterface::questionYN("Is this a new University\n", "Nice\n");
+				/*$answer = UserInterface::questionYN("Is this a new University", "OK\n");
 				if ($answer) {
 						$new_uni = new University;
-						$ui = new UserInterface();
 						$new_uni->addInfo($ui);
 						$this->university = $new_uni;
-					}	
+					}*/	
 				}
 				break;
 			case "2":
+				echo "***************\nSELECTING UNIVERSITY\n***************\n";
+				break;
+			case "3":
 				echo "***************\nRUNNING TEST SCRAPE\n***************\n";
 				if ($this->chosen_scraper) {
 					$this->chosen_scraper->testPageScrape();
@@ -264,7 +306,7 @@ class Application {
 					echo UserInterface::NO_URL;
 				}
 				break;
-			case "3":
+			case "4":
 				echo "***************\nRUNNING MANUAL SCRAPE\n***************\n";
 				if ($this->chosen_scraper) {
 					$this->chosen_scraper->manualScrapeCourse();
@@ -272,16 +314,27 @@ class Application {
 					echo UserInterface::NO_URL;
 				}
 				break;
-			case "4":
+			case "5":
 				echo "***************\nRESETTING SCRAPER QUERIES\n***************\n";
 				if ($this->chosen_scraper) {
-					$this->chosen_scraper->resetScraperQueries ();
+					$this->chosen_scraper->resetScraperQueries();
 				} else {
 					echo UserInterface::NO_URL;
 				}
 				break;
-			case "5":
-				echo "***************\nOUTPUT COURSES TO CSV\n***************\n";
+			case "6":
+				echo "***************\nRUNNING SCRAPE\n***************\n";
+				if ($this->chosen_scraper) {
+					$this->chosen_scraper->runScrape();
+				} else {
+					echo UserInterface::NO_URL;
+				}
+				break;
+			case "7":
+				echo "***************\nPUSHING COURSES TO DATABASE\n***************\n";
+				break;
+			case "8":
+				echo "***************\nOUTPUTTING COURSES TO CSV\n***************\n";
 				/*
 				if (!$this->university) {
 					$new_uni = new University;
@@ -296,7 +349,7 @@ class Application {
 				
 				*/
 				break;
-			case "6":
+			case "9":
 				echo "***************\nLOAD CSV TO DATABASE\n***************\n";
 				
 
