@@ -36,8 +36,8 @@ $acal_scr->url = "http://courses.cornell.edu/content.php?catoid=26&navoid=6782";
 
 
 
-//$acal_scr->testPageScrape();
-$uofc_scr->testPageScrape();
+$acal_scr->testPageScrape();
+//$uofc_scr->testPageScrape();
 
 //$acal_scr->xpath = $app->takeUrlReturnXpath($urls[0]);
 //$acal_scr->url = $urls[0];

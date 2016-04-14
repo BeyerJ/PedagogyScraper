@@ -285,18 +285,12 @@ class Application {
 				
 
 				/*
-				if (!$this->university) {
-					$new_uni = new University;
-					$ui = new UserInterface();
-					$new_uni->addInfo($ui);
-					$this->university = $new_uni;
-				}
 				$csv = new CSV;
 				$csv->makeCSV($this->university);
 				$csv->addCourses($this->courses);
 				$csv->writeObjects();
-				
 				*/
+			
 				break;
 			case "6":
 				echo "***************\nLOAD CSV TO DATABASE\n***************\n";
