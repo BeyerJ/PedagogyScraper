@@ -9,30 +9,31 @@
 class GeneralScraper 
 {
 	// Properties
-	protected $name; 
-	protected $id;
-	public $UI;
-	public $STATUS;
-	public $xpath;
-	public $url;
+	protected $name; //descriptive name of scraper, gets called to refer to the scraper in the command line
+	protected $id; //id of scraper, gets added to the database queries
+
+	public $xpath; //xpath object the scraper is currently looking at
+	public $url; //the URL the scraper is currently looking at
+
 	protected $current_node; //the node 
 	protected $current_links; //an array of urls that lead to CoursePages from the current page
 	protected $courses; //the resulting array of course objects the scraper created
 	protected $current_course; //the course object the scraper is working on currently --> used by scrapeCoursePage and grabCourseProp
 	protected $queries = array(); //an array of xpath queries and regex the scraper uses for looking up particular information on the webpage
 	protected $course_options = array(); //an array of options 
-	protected $correspondences;
-	protected $stop_list = array();
+	protected $correspondences; //array that stores results of a manual scrape
+	protected $stop_list = array(); //stop list of text nodes that should be ignored during manual scraping
 
 
 	public function __construct() {
-		echo "Initiating scraper of class " . get_class($this) . "\n";
-		$n = 1;
+		//echo "Initiating scraper of class " . get_class($this) . "\n";
 		$course_ex = new Course;
 		$this->queries["cell_query"] = null;
 		$this->queries["link_query"] = null;
 		$this->queries["texts_query"] = null;
 		$this->queries["next_page_query"] = null;
+
+		$n = 1;
 		foreach ($course_ex->properties as $key => $value) {
 			if (!in_array($key, ["id", "university_id", "created", "updated"])) {
 				$this->course_options[$n] = $key;
@@ -50,6 +51,8 @@ class GeneralScraper
 		//otherwise return null
 		if (array_key_exists($varname, $this->queries)) {
 			return $this->queries[$varname];
+		} elseif ($varname=="name" OR $varname=="id") {
+			return $this->$varname;
 		} else {
 			return null;
 		}
@@ -63,6 +66,7 @@ class GeneralScraper
 		}
 	}
 
+
 	//Force extending classes to define the method for checking if the scraper applies
 	//Returns boolean
 	public function checkIfApplies() {
@@ -70,13 +74,15 @@ class GeneralScraper
 		return false;
 	}
 
+
 	//Extremely complicated logic for grabbing manual user input regarding the texts in the cell.
 	//Gets called when attempting manual scraping.
 	public function grabTexts () {
 		//1. Find all text() nodes among the descendants of current node, using the "texts_query".
 		$texts = $this->findNodes($this->texts_query);
 		$correspondences = array();
-		echo "The manual scraper has grabbed all of the text nodes from its current position on the page. Now it will ask you to assess every one of those nodes and reply if those nodes contain any of the course information properties.\n\nIf the same text node contains data for several different course properties, you can push 'a' and attempt to add regular expressions to separate the different pieces of data.\n\nIf you're not adding regular expressions, then several text nodes can be assigned to the same course property (for example, if decide to put several different text parts to the 'note' field).\n\nIf the data in the text has already been scraped using the automatic scraper, there's no need to add it again (just reply with '0' -- 'none' in those cases)\n";
+		echo UserInterface::GRAB_TEXTS_HELP;
+		UserInterface::pressEnter();
 		//2. For each of these text nodes:
 		foreach ($texts as $index => $t) {
 			$index++;
@@ -93,38 +99,54 @@ class GeneralScraper
 				//Since "term" and "description" are separate course properties, we might want to write several regular expressions to account for that fact
 				//This loop allows the user to create an array of regular expressions, that looks something like this:
 				//["term" => '/^(?<term>.*) term/, "description" => '/\) (?<description>.*)$/']
-				if ($option == "a") {
-					echo "\n\nTEXT (" . $index . "): " . $text . "\n";
-					//ask the user which course property they want to add a regex for
-					$add = UserInterface::askForSetReply('ASSIGN_COURSE_OPTION_TO_REGEX', ["s" => "stop adding regex"] + $this->course_options, true);
-					$regs = array();
-					//option "s" is "stop adding regex for this particular piece of text -- either because the user has added all they wanted or because they're sick of trying to make it work"
-					while ($add != "s") {
+				switch ($option) {
+					case 'a':
 						echo "\n\nTEXT (" . $index . "): " . $text . "\n";
-						$regex_works = 0;
-						while (!$regex_works) {
-							$regex = UserInterface::askForInput('ASSIGN_REGEX');
-							$regex_works = $this->checkRegEx($regex, $text, $this->course_options[$add]);
-						}
-						if ($regex_works == "y") {
-							$regs[$this->course_options[$add]] = $regex;
-						}
-						echo "\n\nTEXT (" . $index . "): " . $text . "\n";
+						//ask the user which course property they want to add a regex for
 						$add = UserInterface::askForSetReply('ASSIGN_COURSE_OPTION_TO_REGEX', ["s" => "stop adding regex"] + $this->course_options, true);
-					}
-					$correspondences[$index] = $regs;
-				} else if (!$option) {
-					$correspondences[$index] = "none";
-				} else {
-					$correspondences[$index] = $this->course_options[$option];
+						$regs = array();
+						//option "s" is "stop adding regex for this particular piece of text -- either because the user has added all they wanted or because they're sick of trying to make it work"
+						while ($add != "s") {
+							echo "\n\nTEXT (" . $index . "): " . $text . "\n";
+							$regex_works = 0;
+							//Asks the user for a regex, then tests it against the string using method checkRegEx
+							while (!$regex_works) {
+								$regex = UserInterface::askForInput('ASSIGN_REGEX');
+								$regex_works = $this->checkRegEx($regex, $text, $this->course_options[$add]);
+							}
+							//If user was satisfied with how their regex worked, then add this regex to the list of queries
+							if ($regex_works == "y") {
+								$regs[$this->course_options[$add]] = $regex;
+							}
+							echo "\n\nTEXT (" . $index . "): " . $text . "\n";
+							$add = UserInterface::askForSetReply('ASSIGN_COURSE_OPTION_TO_REGEX', ["s" => "stop adding regex"] + $this->course_options, true);
+						} //add the resulting array of regular expressions to the correspondences
+						$correspondences[$index] = $regs;
+						break;
+					case '0':
+						$correspondences[$index] = "none";
+						break;
+					default:
+						$correspondences[$index] = $this->course_options[$option];
+						break;
 				}
+				/*
+				if ($option == "a") {
+
+				//if user chose something other than "a", then just save that decision to the correspondences
+				} else if (!$option) {
+					
+				} else {
+					
+				}*/
 			}
 		}
+		//save the resulting array for posteriority
 		$this->correspondences = $correspondences;
-		print_r($this->queries);
 	}
 
-
+	//matches a regular expression against the string, looking specifically for a pointed out section with label $propname
+	//asks the user if they're satisfied with the result of the match
 	public function checkRegEx ($regex, $string, $propname) {
 		preg_match($regex, $string, $matches);
 		echo "\n\n";
@@ -136,24 +158,13 @@ class GeneralScraper
 		return UserInterface::askForSetReply('DOES_THE_REGEX_WORK', ["0" => "This doesn't work. I want to enter another regex", "y" => "This regex works, assign it to property", "c" => "I changed my mind, I don't want to assign this property a regex"], true);
 	}
 
-	public function getReply($prompt = "Which value?\n", $show_options=true) {
-		//Prompting the user for a URL
-		//It turns out, PHP on Windows doesn't support the readline() function :(
-		if ($show_options) {
-			print_r($this->course_options);	
-		}
-		if (PHP_OS == 'WINNT') {
-			echo $prompt;
-			$input = stream_get_line(STDIN, 1024, PHP_EOL);
-		} else {
-			$input = readline($prompt);
-		}
-		return $input;
-	}
 
+	//adds new queries to the scraper after a manual scrape has been conducted
 	public function applyCorrespondences() {
-		print_r($this->correspondences);
 		foreach ($this->correspondences as $key => $value) {
+			//if the element is an array, e.g. 22 => ["course_title" => "/^Title: (?<course_title>.*)$/"]
+			//then add an xpath query "course_title_query" -> "(~query to look for text)[22]"
+			//and a regex query "course_title_regex" -> '/^Title: (?<course_title>.*)$/'
 			if (is_array($value)) {
 				foreach ($value as $add => $regex) {
 					$regex_title = $add . "_regex";
@@ -161,6 +172,8 @@ class GeneralScraper
 					$this->$regex_title = $regex;
 					$this->$query_title = "(" . $this->texts_query . ")[" . $key . "]";
 				}
+			//if the element is a string, e.g. 11 => "description"
+			//then append the xpath query "(~query to look for text)[11]" to the end of "description_query"
 			} elseif ($value != "none") {
 		 		$query_title = $value . "_query";
 		 		if ($this->$query_title) {
@@ -169,17 +182,13 @@ class GeneralScraper
 		 		$this->$query_title .= "(" . $this->texts_query . ")[" . $key . "]";
 		 	}
 		}
-		foreach ($this->queries as $key => $value) {
-			echo "$key => " . $this->$key;
-		}
 	}
 
 
-
+	//find all nodes using the query provided, then return an array of nodes
 	public function findNodes ($querytonodes) {
-		//find all nodes using the query provided, then return an array of nodes
 		$nodes = array();
-
+		//if a current_node is set, start looking from it and not form the top
 		if ($this->current_node) {
 			foreach ($this->xpath->query($querytonodes, $this->current_node) as $node) {
 				$nodes[] = $node;
@@ -193,8 +202,8 @@ class GeneralScraper
 	}
 
 
+	//take an array of DOM nodes, return an array of values
 	public function getNodeValues ($nodes_array) {
-		//take an array of DOM nodes, return an array of values
 		$values = array();
 		foreach ($nodes_array as $node) {
 			$values[] = $node->nodeValue;
@@ -203,15 +212,11 @@ class GeneralScraper
 	}
 
 
-	public function loopOnNodes ($func, $nodesarray) {
-		//take an array of nodes and a function, call this function on each node in a loop
-		foreach ($nodesarray as $node) {
-			$func($node);
-		}
-	}
-
-
-
+	//Do a scrape of the course page, using the current $xpath
+	//Add the result to the courses[] array
+	//Applies the cell_query to find all cells for specific courses, then loops through them
+	//For each cell creates a new current_course, then loops on its properties
+	//Calls grabCourseProp on each property
 	public function scrapeCoursePage () {
 		$this->current_node = NULL;
 
@@ -222,7 +227,6 @@ class GeneralScraper
 			foreach ($this->current_course->properties as $key => $value) {
 				$this->grabCourseProp ($key);
 			}
-
 			echo "Result:\n";
 			print_r($this->current_course);
 			$this->courses[] = $this->current_course;
@@ -231,9 +235,9 @@ class GeneralScraper
 	}
 
 
-	
-
-
+	//While being in a cell dedicated to a particular course, looks for data on a specific course property
+	//First applies $propname_query to find the node dedicated to specific property
+	//Then applies $propname_regex to match a string inside the text value of the node
 	public function grabCourseProp ($propname) {
 		$query = $propname . '_query';
 		$regex = $propname . '_regex';
@@ -252,9 +256,7 @@ class GeneralScraper
 				}
 				$this->current_course->$propname .= $result . " ";
 			}
-		} else {
-			echo "No query for " . $propname . "\n";
-		}	
+		} 
 	}
 
 	//If $this->links array is empty, grabs all links on the page, puts them in the $this->links array
@@ -305,7 +307,7 @@ class GeneralScraper
 		$cells = $this->findNodes($this->cell_query);
 
 		$i = mt_rand(0, count($cells)-1);
-		echo "Testing cell number " . $i;
+		echo "Testing cell number " . $i . "\n";
 
 		$this->current_course = new Course();
 		$this->current_node = $cells[$i];
@@ -316,16 +318,12 @@ class GeneralScraper
 
 		echo "Finished with provided queries\n";
 		echo "Result:\n";
-		print_r($this->current_course);
-		if ($this->getReply("Do a manual scrape?\n", false)) {
-			echo "Attempting manual scraping.\n";
-			$this->manualScrapeCourse();
-		}
-		
-			
+		print_r($this->current_course);			
 	}
 
 	public function manualScrapeCourse () {
+		$this->testPageScrape();
+
 		$this->grabTexts();
 		$this->applyCorrespondences();
 
@@ -336,15 +334,10 @@ class GeneralScraper
 
 		echo "Final result:\n";
 		print_r($this->current_course);
-
-		print_r($this->queries);
-
-		if ($this->getReply("Reset scraper queries?\n", false)) {
-			$this->resetScraperQueries();
-		}
 	}
 
 
+	//Resets scraper queries to their default state (makes sense to call it after a manual scrape).
 	public function resetScraperQueries () {
 		echo "Resetting Scraper queries and regex to default values.\n";
 		$class = get_class($this);
@@ -366,30 +359,6 @@ class GeneralScraper
 
 
 
-	// Scrape one site or url
-	public function newScrape(){
-		if (!$this->UI) {
-			$this->UI = new UserInterface();
-		}
-		$this->STATUS = new ApplicationStatus();
-		//Ask for the general URL, using a method from UserInterface
-		$catalog_url = $this->UI->askForURL();
-
-		//Check if URL is valid
-		//$this->STATUS->urlIsValid($catalog_url);
-
-		//If the method returned FALSE, stop the script
-
-/*
-		if(!$catalog_url) {
-			exit;
-		}
-*/
-		return $catalog_url;
-	}
-
-
-	
 	
 
 // scrape university info (name and such) (because every one should do this) (maybe, fuck I don't know)

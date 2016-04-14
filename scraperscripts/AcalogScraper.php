@@ -16,7 +16,7 @@ class AcalogScraper extends GeneralScraper {
 		$this->course_number_regex = '/ (?<course_number>[0-9]{3,4}) /';
 		/*COURSE TITLE*/
 		$this->course_title_query = '*//h1';
-		$this->course_title_regex = '/ - (?<course_title>[A-Za-z ,\t\[\]]+)$/';
+		$this->course_title_regex = '/ - (?<course_title>.*)$/';
 		/*COURSE LETTERCODE*/
 		$this->course_lettercode_query = '*//h1';
 		$this->course_lettercode_regex = '/^(?<course_lettercode>[A-Z]{2,5}) /';
@@ -24,6 +24,7 @@ class AcalogScraper extends GeneralScraper {
 
 
 	public function checkIfApplies () {
+		echo "Checking if " . $this->name . " applies to URL '" . $this->url . "'.\n";
 		$query = "//a[contains(@href, 'http://www.acalog.com') and contains(text(), 'Acalog')]";
 		$nodes = $this->findNodes($query);
 		return !(empty($nodes));

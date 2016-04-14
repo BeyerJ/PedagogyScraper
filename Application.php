@@ -3,20 +3,27 @@
 require_once 'autoload.php';
 
 class Application {
-
+	public $on;
 	protected $url;
-	protected $university;
-	public $courses = array();
+	protected $xpath;
+	protected $university_id;
+	protected $courses = array();
 	protected $programs = array();
-	public $UI;
 	protected $available_scrapers = ['AcalogScraper', 'UofCalgaryScraper'];
 	protected $scrapers = array();
+	protected $chosen_scraper;
 	protected $menu_items = array(
-		""
+		"0" => "Show status",
+		"1" => "Input a URL",
+		"2" => "Run a test scrape",
+		"3" => "Attempt a manual scrape",
+		"4" => "Reset scraper queries to default values",
+		"e" => "Exit"
 	);
 
 
 	public function __construct () {
+		$this->on = true;
 		foreach ($this->available_scrapers as $scraper_class) {
 			$scr = new $scraper_class;
 			$this->scrapers[$scr->id] = $scr;
@@ -61,7 +68,9 @@ class Application {
 	}
 
 	public function getDBConn() {
-		$this->mysql = DBConnection::getConnection();
+		if (!$this->mysql) {
+			$this->mysql = DBConnection::getConnection();
+		}
 	}
 
 	// takes an array and puts it in the table of your choice
@@ -115,9 +124,10 @@ class Application {
 		$well_formed = filter_var($url, FILTER_VALIDATE_URL);
 		if (!$well_formed) {
 			echo "Badly-formed URL!\n";
-			exit;
+			return false;
 		}
-		$headers = @get_headers($url);
+		return true;
+		//$headers = @get_headers($url);
 		//check if the header contains 404, 403 or 500, exit; otherwise return url
 	}
 
@@ -207,8 +217,64 @@ class Application {
 
 
 	public function mainMenu() {
-		echo "This is Pedagy Scraper 1.0. What shall we do today?\n";
-		UserInterface::askForSetReply('DOES_THE_REGEX_WORK', ["0" => "This doesn't work. I want to enter another regex", "y" => "This regex works, assign it to property", "c" => "I changed my mind, I don't want to assign this property a regex"], true);
+		echo UserInterface::GREETING;
+		$user_command = UserInterface::askForSetReply('MAIN_MENU', $this->menu_items, true);
+		switch ($user_command) {
+			case "0":
+				echo "***************\nSTATUS\n***************\n";
+				echo "I'm scraper, hello.\n\n\n";
+				break;
+			case "1":
+				echo "***************\nENTERING NEW URL\n***************\n";
+				$url = UserInterface::askForInput('CATALOG_URL_PROMPT');
+				if ($this->urlIsValid($url)) {
+					$this->url = $url;
+					$xpath = $this->takeUrlReturnXpath($url);
+					foreach ($this->scrapers as $scraper) {
+						$scraper->url = $url;
+						$scraper->xpath = $xpath;
+						$applies = $scraper->checkIfApplies();
+						if($applies) {
+							echo "\n\nChose " . $scraper->name . "\n";
+							$this->chosen_scraper = $scraper;
+							break;
+						}
+					}
+					if (!$applies) {
+						echo UserInterface::NO_SCRAPER;
+						$this->url = null;
+					}
+				}
+				break;
+			case "2":
+				echo "***************\nRUNNING TEST SCRAPE\n***************\n";
+				if ($this->chosen_scraper) {
+					$this->chosen_scraper->testPageScrape();
+				} else {
+					echo UserInterface::NO_URL;
+				}
+				break;
+			case "3":
+				echo "***************\nRUNNING MANUAL SCRAPE\n***************\n";
+				if ($this->chosen_scraper) {
+					$this->chosen_scraper->manualScrapeCourse();
+				} else {
+					echo UserInterface::NO_URL;
+				}
+				break;
+			case "4":
+				echo "***************\nRESETTING SCRAPER QUERIES\n***************\n";
+				if ($this->chosen_scraper) {
+					$this->chosen_scraper->resetScraperQueries ();
+				} else {
+					echo UserInterface::NO_URL;
+				}
+				break;
+			case "e":
+				echo UserInterface::BYE;
+				$this->on = false;
+				break;
+		}
 
 	}
 

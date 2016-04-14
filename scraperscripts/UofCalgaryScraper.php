@@ -22,6 +22,7 @@ class UofCalgaryScraper extends GeneralScraper {
 	}
 
 	public function checkIfApplies () {
+		echo "Checking if " . $this->name . " applies to URL '" . $this->url . "'.\n";
 		return (parse_url($this->url, PHP_URL_HOST) == "www.ucalgary.ca"); 
 	}
 }

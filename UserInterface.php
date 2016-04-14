@@ -22,10 +22,22 @@ const EDIT_CHOOSE = "Which property would you like to edit?\n";
 const WRONG_OPTION = "Please choose one of the options or type 'exit' to quit.\n";
 const NULL_ANSWER = "Please enter a response or type 'exit' to quit.\n";
 const CHOOSE_OPTION = "Choose one of the options below.\n";
-const ASSIGN_COURSE_OPTION_TO_TEXT = "Which course property does this text correspond to?\n";
+const ANY_KEY = "Press Enter to continue.\n";
+
+
+/* Texts for GeneralScraper::grabTexts() */
+const GRAB_TEXTS_HELP = "The manual scraper has grabbed all of the text nodes from its current position on the page. Now it will ask you to assess every one of those nodes and reply if those nodes contain any of the course information properties.\n\nIf the same text node contains data for several different course properties, you can push 'a' and attempt to add regular expressions to separate the different pieces of data.\n\nIf you're not adding regular expressions, then several text nodes can be assigned to the same course property (for example, if decide to put several different text parts to the 'note' field).\n\nIf the data in the text has already been scraped using the automatic scraper, there's no need to add it again (just reply with '0' -- 'none' in those cases)\n";
+const ASSIGN_COURSE_OPTION_TO_TEXT = "Which course property that has not been scraped yet does this text correspond to?\n";
 const ASSIGN_COURSE_OPTION_TO_REGEX = "Which course property are you adding RegEx for?\n";
 const ASSIGN_REGEX = "Enter the regular expression below, encased in slashes. Example: /(?<year>[0-9]{4}-[0-9]{4})/\n";
 const DOES_THE_REGEX_WORK = "Does this regex work like you want it to?\n";
+
+
+const MAIN_MENU = "Enter your command:\n";
+const BYE = "\n\n*************************\nThank you for using Pedagogy Scraper! See you some other time!\n";
+const GREETING = "\n\nThis is Pedagogy Scraper 1.0.\n\n";
+const NO_SCRAPER = "The scrapers I have don't work for this URL. Unable to proceed with scraping.\n\n\n";
+const NO_URL = "No URL input to work with.\n\n\n";
 
 const PAUSE_SCRAPE_PROMPT = "Would you like to save the data to a CSV so you can edit it later?[yes/no]\n";
 const PULL_EDITED_DATA = "Would you like to retrieve edited data from a CSV?[yes/no]\n";
@@ -168,6 +180,15 @@ public static function askForInput($prompt) {
 	} else {
 		return $answer;	
 	}
+}
+
+public static function pressEnter($prompt=null) {
+	if (!$prompt) {
+		$prompt = self::ANY_KEY;
+	}
+	echo "\n\n";
+	self::userPrompt($prompt);
+	return true;
 }
 
 
