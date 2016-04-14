@@ -92,7 +92,7 @@ class GeneralScraper
 			if ($text AND !in_array(strtolower($text), $this->stop_list)) {
 				echo "\n\nTEXT (" . $index . "): " . $text . "\n";
 				//Ask the user if this particular text corresponds to any course values that they would want to grab
-				$option = UserInterface::askForSetReply('ASSIGN_COURSE_OPTION_TO_TEXT', ["a" => "add regex", "0" => "none"] + $this->course_options, true);
+				$option = UserInterface::askForSetReply('ASSIGN_COURSE_OPTION_TO_TEXT', ["a" => "add regex", "0" => "none"] + $this->course_options + ["c" => "cancel"], true);
 				//Option "a" stands for adding new regular expression queries in addition to xpath queries.
 				//This allows to account for such cases when the same piece of text contains several pieces of relevant information, such as:
 				//"(term: spring) This is an introductory course to Accounting!"
@@ -100,6 +100,8 @@ class GeneralScraper
 				//This loop allows the user to create an array of regular expressions, that looks something like this:
 				//["term" => '/^(?<term>.*) term/, "description" => '/\) (?<description>.*)$/']
 				switch ($option) {
+					case 'c':
+						break 2;
 					case 'a':
 						echo "\n\nTEXT (" . $index . "): " . $text . "\n";
 						//ask the user which course property they want to add a regex for
