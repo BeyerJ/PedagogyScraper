@@ -9,12 +9,18 @@ class Application {
 	public $courses = array();
 	protected $programs = array();
 	public $UI;
+	protected $available_scrapers = ['AcalogScraper', 'UofCalgaryScraper'];
 	protected $scrapers = array();
+	protected $menu_items = array(
+		""
+	);
 
 
 	public function __construct () {
-		$scr = new UofCalgaryScraper();
-		$this->scrapers[$scr->id] = $scr;
+		foreach ($this->available_scrapers as $scraper_class) {
+			$scr = new $scraper_class;
+			$this->scrapers[$scr->id] = $scr;
+		}
 	}
 
 	protected $mysql;
@@ -174,6 +180,13 @@ class Application {
 		$e = count($this->courses); // movelogic for random to application 
 		$i = rand(1 ,$e);
 		return $this->courses[$i];
+	}
+
+
+	public function mainMenu() {
+		echo "This is Pedagy Scraper 1.0. What shall we do today?\n";
+		UserInterface::askForSetReply('DOES_THE_REGEX_WORK', ["0" => "This doesn't work. I want to enter another regex", "y" => "This regex works, assign it to property", "c" => "I changed my mind, I don't want to assign this property a regex"], true);
+
 	}
 
 } 

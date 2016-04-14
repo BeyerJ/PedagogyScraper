@@ -17,6 +17,16 @@ const YES_NO_PROMPT = "Please answer yes or no \n";
 const NEW_SCRAPE = "Would you like to start a scrape?\n";
 const EDIT_DATA = "Would you like to edit a property?\n";
 const EDIT_CHOOSE = "Which property would you like to edit?\n";
+
+
+const WRONG_OPTION = "Please choose one of the options or type 'exit' to quit.\n";
+const NULL_ANSWER = "Please enter a response or type 'exit' to quit.\n";
+const CHOOSE_OPTION = "Choose one of the options below.\n";
+const ASSIGN_COURSE_OPTION_TO_TEXT = "Which course property does this text correspond to?\n";
+const ASSIGN_COURSE_OPTION_TO_REGEX = "Which course property are you adding RegEx for?\n";
+const ASSIGN_REGEX = "Enter the regular expression below, encased in slashes. Example: /(?<year>[0-9]{4}-[0-9]{4})/\n";
+const DOES_THE_REGEX_WORK = "Does this regex work like you want it to?\n";
+
 //const = "";
 
 /******METHODS******/
@@ -119,6 +129,44 @@ public function editEntry() {
 	}
 }
 
+
+public static function askForSetReply($prompt, $options, $output_options) {
+	echo "\n";
+	if ($output_options) {
+		echo self::CHOOSE_OPTION;
+		print_r($options);
+	}
+	$answer = self::userPrompt(constant("self::$prompt"));
+	while ($answer != "exit" AND !array_key_exists($answer, $options)) {
+		echo "\n";
+		echo "Options:\n";
+		print_r($options);
+		$answer = self::userPrompt(self::WRONG_OPTION . "\n" . constant("self::$prompt"));
+	}
+	echo "--------------------------\n";
+	if ($answer == "exit") {
+		exit;
+	} elseif (array_key_exists($answer, $options)) {
+		return $answer;	
+	}
+
+}
+
+
+public static function askForInput($prompt) {
+	echo "\n";
+	$answer = self::userPrompt(constant("self::$prompt"));
+	while (!$answer) {
+		echo "\n";
+		$answer = self::userPrompt(self::NULL_ANSWER . "\n" . constant("self::$prompt"));
+	}
+	echo "--------------------------\n";
+	if ($answer == "exit") {
+		exit;
+	} else {
+		return $answer;	
+	}
+}
 
 
 

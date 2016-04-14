@@ -11,30 +11,38 @@ $urls = array('http://www.ucalgary.ca/pubs/calendar/current/course-desc-main.htm
 
 
 
-/*
 $uofc_scr = new UofCalgaryScraper();
+
+
 $uofc_scr->xpath = $app->takeUrlReturnXpath($urls[0]);
 $uofc_scr->url = $urls[0];
-$uofc_scr->scrapeCatalogPage();
+//$uofc_scr->scrapeCatalogPage();
 
-print_r($uofc_scr->courses);
-*/
+//print_r($uofc_scr->courses);
+
 $scraperyay = "AcalogScraper";
 
-$uofc_scr = new $scraperyay();
-$uofc_scr->xpath = $app->takeUrlReturnXpath("http://calendar.ualberta.ca/content.php?catoid=6&navoid=971");
-$uofc_scr->url = "http://calendar.ualberta.ca/content.php?catoid=6&navoid=971";
+$acal_scr = new $scraperyay();
 
-//$uofc_scr->xpath = $app->takeUrlReturnXpath("http://courses.cornell.edu/content.php?catoid=26&navoid=6782");
-//$uofc_scr->url = "http://courses.cornell.edu/content.php?catoid=26&navoid=6782";
+$acal_scr->xpath = $app->takeUrlReturnXpath("http://calendar.ualberta.ca/content.php?catoid=6&navoid=971");
+$acal_scr->url = "http://calendar.ualberta.ca/content.php?catoid=6&navoid=971";
 
-
-//$uofc_scr->xpath = $app->takeUrlReturnXpath("http://catalog.kennesaw.edu/content.php?catoid=24&navoid=2024");
-//$uofc_scr->url = "http://catalog.kennesaw.edu/content.php?catoid=24&navoid=2024";
+$acal_scr->xpath = $app->takeUrlReturnXpath("http://courses.cornell.edu/content.php?catoid=26&navoid=6782");
+$acal_scr->url = "http://courses.cornell.edu/content.php?catoid=26&navoid=6782";
 
 
+//$acal_scr->xpath = $app->takeUrlReturnXpath("http://catalog.kennesaw.edu/content.php?catoid=24&navoid=2024");
+//$acal_scr->url = "http://catalog.kennesaw.edu/content.php?catoid=24&navoid=2024";
 
+
+
+//$acal_scr->testPageScrape();
 $uofc_scr->testPageScrape();
+
+//$acal_scr->xpath = $app->takeUrlReturnXpath($urls[0]);
+//$acal_scr->url = $urls[0];
+
+//echo ($acal_scr->checkIfApplies()) ? "true" : "false";
 
 //print_r($uofc_scr->courses);
 //var_dump(parse_url($uofc_scr->url, PHP_URL_HOST));
