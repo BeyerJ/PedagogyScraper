@@ -385,6 +385,14 @@ class GeneralScraper
 			}
 		return $info;
 	}
+
+
+// Outputs the queries
+	public function outputQueries() {
+		foreach ($this->queries as $query => $value) {
+			echo "-- --" . $query . " : " . $value . "\n";
+		}
+	}
 }
 
 ?>
