@@ -7,6 +7,7 @@ class University extends CalendarObject {
 	protected $table = "university";
 	public $properties = array(
 			'id' => null,
+			'host' => null,
 			'university_title' => null,
 			'country' => null,
 			'province_state' => null,

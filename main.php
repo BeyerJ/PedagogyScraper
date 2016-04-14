@@ -47,7 +47,7 @@ while ($keep_scraping == true) {
 	$url = $general->newScrape();
 	echo "You have given me a URL\n";
 	$general->buildDOM($url);
-	echo "I build a DOM object\n";
+	echo "I built a DOM object\n";
 	/* 
 
 	// create university object
@@ -60,7 +60,7 @@ while ($keep_scraping == true) {
 		$keep_scraping = false;
 		echo "I dont wanna\n";
 	}
-
+	*/
 }
 
 
