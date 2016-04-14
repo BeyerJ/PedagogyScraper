@@ -9,18 +9,12 @@ class CSV
 	/**
 	* Properties 
 	*/
-	protected $filename;
+	public $filename;
 	protected $university;
 	protected $courses = array();
 
-	const PAUSED_SCRAPES = 'results/paused_scrapes.csv';
+	const SAVED_COURSE_DATA = 'results/saved_course_data.csv';
 	
-	// Should I make it so that if the file exists already I add a number or something?
-	
-	function __construct() {
-		
-	}
-
 
 	/**
 	* Methods
@@ -52,9 +46,14 @@ class CSV
 		$greeting = array("This is the raw data from the institution: " . $university->university_title . " please edit as needed");
 		if (self::checkExists() == false) {
 			echo "I have made a thing for " . $university->university_title . "\n";
-			fputcsv(self::openPipeA(), $greeting);
-			
+			fputcsv(self::openPipeA(), $greeting);	
 		}
+		$keys = array();
+		foreach ($this->university->properties as $key => $value) {
+			$keys[] = $key;
+		}
+		fputcsv(self::openPipeA(), $keys);
+		self::writeProp($university);
 	}
 
 
@@ -65,7 +64,7 @@ class CSV
 
 	// writes the university and course objects into the csv
 	public function writeObjects() {
-		//self::writeProp($this->university); dont need because uni is in database already
+		
 		foreach ($this->courses as $course) {
 			self::writeProp($course);
 		}
@@ -107,11 +106,15 @@ class CSV
 		}
 
 	// gets an assoc array of the saved scrapes so the UI can echo them and the user can select one to pull and push into the database after they have edited the information
-	public function readPaused() {
-		$pipeline = fopen('results/paused_scrapes.csv', 'r');
+	public function readSavedData() {
+		if (!file_exists('results/saved_course_data.csv')) {
+			$pipeline = fopen('results/saved_course_data.csv', 'w');
+			fclose($pipeline);
+		}
+		$pipeline = fopen('results/saved_course_data.csv', 'r');
 		$list = array();
 		$i = 0;
-		while($row = fgetcsv($pipeline, 2000)) {
+		while($row = fgetcsv($pipeline, 2000)) { 
 			$list[$i] = $row[0];
 			$i++;
 		}
@@ -119,8 +122,13 @@ class CSV
 		return $list;
 	}
 
+	public function addToSaved($filename) {
+		$array = array($filename);
+		$pipeline = fopen('results/saved_course_data.csv', 'a');
+		fputcsv($pipeline, $array);
+		fclose($pipeline);
+	}
 	
-
 	public function checkExists(){
 		if (file_exists($this->filename)) {
 			return true;
@@ -143,38 +151,33 @@ class CSV
 		$pipeline = self::openPipeR();
 		while ($course[] = fgetcsv($pipeline, 2000)) {	
 		}
-		$key = $course[1];
+		$key = $course[3];
 		//print_r($key);
-		for ($e=2; $e < (count($course) - 1); $e++) { 
-			for ($i=0; $i < count($course[2]); $i++) { 
+		for ($e=4; $e < (count($course) - 1); $e++) { 
+			for ($i=0; $i < count($course[4]); $i++) { 
 				$new_key = $key[$i];
 				$new_array[$new_key] = $course[$e][$i];
 
 			}
 		$edited_courses[] = $new_array;
 		}
+		fclose($pipeline);
 		return $edited_courses;
 		
 	}
 
-	// I realized that the functions I have made are super specific to each object and I don't know if that is at all helpful
-	public function getCoursesGen() {
+	// will retrieve the university information
+	public function getUni() {
 		$pipeline = self::openPipeR();
-		$edited_courses = array();
-		$edited_course = array();
-		$e = 0;
-		while ($course = fgetcsv($pipeline)) {
-			for ($i=0; $i < count($course); $i++) { 
-				$key = $keys[$i];
-				$edited_course[$key] = $course[$i];
-			}
-			$edited_courses[$e] = $edited_course;
-			$e++;
+		while ($row[] = fgetcsv($pipeline, 2000)) {
 		}
-		unset($edited_courses[0]);
-		unset($edited_courses[1]);
-		fclose($pipeline);
-		return $edited_courses;
+		$key = $row[1];
+		$uni_data = $row[2];
+		for ($i=0; $i < (count($uni_data) - 1); $i++) { 
+			$new_key = $key[$i];
+			$new_array[$new_key] = $uni_data[$i];
+		}
+		print_r($new_array);
 	}
 
 	// will check if there is a file for saved course info, from a paused scrape. if not it will make it
@@ -187,13 +190,19 @@ class CSV
 		}
 	}
 
-	public function pauseScrape() {
-		$pipeline = fopen(self::PAUSED_SCRAPES, 'a');
+	public function saveData() {
+		$pipeline = fopen(self::SAVED_COURSE_DATA, 'a');
 		$saved_file = array($this->filename);
 		fputcsv($pipeline, $saved_file);
 		fclose($pipeline);
-		echo "The scrape of " . $this->university->university_title . " has been paused and the data has been saved to " . $this->filename . "\n";
+		echo "The data from " . $this->university->university_title . " has been paused been saved to " . $this->filename . "\n";
 	}
+
+	// check if the application object has a university object with data
+	public function checkUniObj() {
+
+	}
+
 
 
 }

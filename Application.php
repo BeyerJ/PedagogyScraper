@@ -212,10 +212,10 @@ class Application {
 	}
 
 	// choose random result (has class property - courses or course objects)
-	public function randomCourse() { // fix this 
-		$e = count($this->courses); //  
-		$i = rand(1 ,$e);
-		return $this->courses[$i];
+	public function randomCourse($courses) { // fix this 
+		$e = count($courses); //  
+		$i = rand(1 ,$e - 1);
+		return $courses[$i];
 	}
 
 
@@ -282,6 +282,8 @@ class Application {
 				break;
 			case "5":
 				echo "***************\nOUTPUT COURSES TO CSV\n***************\n";
+				
+
 				/*
 				if (!$this->university) {
 					$new_uni = new University;
@@ -299,6 +301,19 @@ class Application {
 			case "6":
 				echo "***************\nLOAD CSV TO DATABASE\n***************\n";
 				
+				$csv = new CSV();
+				echo "/n The following CSV files are available\n";
+				$saved = $csv->readSavedData();
+				$choice = UserInterface::askForSetReply('CHOOSE_OPTION', $saved);
+				
+				$filename = $saved[$choice];
+				$csv->filename = $filename;
+				$courses = $csv->getCourses();
+				$course = self::randomCourse($courses);
+				print_r($course);
+
+				$uni = $csv->getUni();
+				print_r($uni);	
 
 
 				break;	
