@@ -40,7 +40,20 @@ class University extends CalendarObject {
 
 // save id to university objects's properties
 
+	public function addInfo($ui) {
+		$start = $ui->questionYN(UserInterface::UNI_INFO_PROMPT, "Good Choice\n");
+		if ($start) {
+			foreach ($this->properties as $key => $value) {
+				echo UserInterface::UNI_INFO;
+				$prompt = 'Enter info for ' . $key . "\n";
+				$answer = $ui->userPrompt($prompt);
+				$this->properties[$key] = $answer;
 
+			}
+		//return $this->properties;
+		}
+		
+	}
 
 
 
