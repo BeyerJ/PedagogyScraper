@@ -23,6 +23,7 @@ class GeneralScraper
 	protected $course_options = array(); //an array of options 
 	protected $correspondences; //array that stores results of a manual scrape
 	protected $stop_list = array(); //stop list of text nodes that should be ignored during manual scraping
+	protected $logs = array();
 
 
 	public function __construct() {
@@ -221,7 +222,6 @@ class GeneralScraper
 	//Calls grabCourseProp on each property
 	public function scrapeCoursePage () {
 		$this->current_node = NULL;
-
 		$cells = $this->findNodes($this->cell_query);
 		foreach ($cells as $cell) {
 			$this->current_course = new Course();
@@ -229,10 +229,7 @@ class GeneralScraper
 			foreach ($this->current_course->properties as $key => $value) {
 				$this->grabCourseProp ($key);
 			}
-			echo "Result:\n";
-			print_r($this->current_course);
 			$this->courses[] = $this->current_course;
-			
 		}
 	}
 
@@ -252,11 +249,11 @@ class GeneralScraper
 					preg_match($this->$regex, $result, $matches);
 					if ($matches) {
 						$result = $matches[$propname];
+						$this->current_course->$propname .= $result . " ";
 					} else {
-						echo "Property $propname - no regex match in '" . $result . "'\n";
+						$this->logs[] = "Property '$propname', regex '{$this->regex}' - no regex match in '" . $result . "'\n";
 					}
 				}
-				$this->current_course->$propname .= $result . " ";
 			}
 		} 
 	}
@@ -269,15 +266,15 @@ class GeneralScraper
 			$links = $this->findNodes($this->link_query);
 			$this->current_links = $this->getNodeValues($links);
 		}
-		$n = 0;
-
-		foreach ($this->current_links as $link) {
-			if ($n < 1) {
-				echo $dir . '/' . $link . "\n";
+		if ($this->current_links) {
+			echo "\nLinks on this page: " . count($this->current_links) . "\n";
+			foreach ($this->current_links as $link) {
+				echo "*";
 				$this->xpath = Application::takeUrlReturnXpath($dir . '/' . $link);
 				$this->scrapeCoursePage();
 			}
-			$n++;
+		} else {
+			echo "No links found using query '" . $this->link_query . "'\n";
 		}
 	}
 
@@ -351,14 +348,29 @@ class GeneralScraper
 	}
 
 
+	//TODO
 	public function goToNextPage () {
 		if ($this->next_page_query) {
 			$nextpageurl = $this->findNodes($this->next_page_query);
 			$nextpageurl = getNodeValues($nextpageurl);
-			//if ()
 		}
 	}
 
+
+	public function runScrape () {
+		$this->links = null;
+		$this->logs = null;
+		$this->courses = null;
+		echo "\n\n";
+		echo "Going through catalog page:\n";
+		$this->scrapeCatalogPage();
+		echo "\nDone\n";
+		echo "Courses scraped: " . count($this->courses) . "\n";
+		echo "RegEx warnings: " . count($this->logs) . "\n";
+		if (UserInterface::questionYN("Would you like to see the regex warnings?", "Outputting regex warnings\n")) {
+			print_r($this->logs);
+		}
+	}
 
 
 	

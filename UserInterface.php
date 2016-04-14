@@ -19,10 +19,11 @@ const EDIT_DATA = "Would you like to edit a property?[yes/no]\n";
 const EDIT_CHOOSE = "Which property would you like to edit?\n";
 const UNI_INFO_PROMPT = "Would you like to enter the information for each university property?[yes/no]\n";
 const UNI_INFO = "Please enter the information for each property\n";
-
 const WRONG_OPTION = "Please choose one of the options or type 'exit' to quit.\n";
 const NULL_ANSWER = "Please enter a response or type 'exit' to quit.\n";
+const CHOOSE_CSV_FILE = "Choose one of the available csv files to load into the database.\n";
 const CHOOSE_OPTION = "Choose one of the options above.\n";
+const CHOOSE_OPTION_REMINDER = "Choose one of the options below.\n";
 const ANY_KEY = "Press Enter to continue.\n";
 
 
@@ -30,7 +31,7 @@ const ANY_KEY = "Press Enter to continue.\n";
 const GRAB_TEXTS_HELP = "The manual scraper has grabbed all of the text nodes from its current position on the page. Now it will ask you to assess every one of those nodes and reply if those nodes contain any of the course information properties.\n\nIf the same text node contains data for several different course properties, you can push 'a' and attempt to add regular expressions to separate the different pieces of data.\n\nIf you're not adding regular expressions, then several text nodes can be assigned to the same course property (for example, if decide to put several different text parts to the 'note' field).\n\nIf the data in the text has already been scraped using the automatic scraper, there's no need to add it again (just reply with '0' -- 'none' in those cases)\n";
 const ASSIGN_COURSE_OPTION_TO_TEXT = "Which course property that has not been scraped yet does this text correspond to?\n";
 const ASSIGN_COURSE_OPTION_TO_REGEX = "Which course property are you adding RegEx for?\n";
-const ASSIGN_REGEX = "Enter the regular expression below, encased in slashes. Example: /(?<year>[0-9]{4}-[0-9]{4})/\n";
+const ASSIGN_REGEX = "Enter the regular expression below, encased in slashes. The RegEx should have the property you're looking for encased in brakets and labeled with ?<name_of_property>. Example: to match '2015-2016' as a property 'year', you can use /(?<year>[0-9]{4}-[0-9]{4})/\n";
 const DOES_THE_REGEX_WORK = "Does this regex work like you want it to?\n";
 
 
@@ -43,6 +44,19 @@ const NO_URL = "No URL input to work with.\n\n\n";
 const SAVE_DATA_PROMPT = "Would you like to save the data to a CSV so you can edit it later?[yes/no]\n";
 const PULL_EDITED_DATA = "Would you like to retrieve edited data from a CSV?[yes/no]\n";
 const SELECT_CSV_FILE = "Please indicate the file you wish to open using the index []\n";
+
+protected static $YESNO = array(
+	"y" => true,
+	"yes" => true,
+	"1" => true,
+	"true" => true,
+	"t" => true,
+	"n" => false,
+	"no" => false,
+	"0" => false,
+	"false" => false,
+	"f" => false
+	);
 //const = "";
 
 /******METHODS******/
@@ -117,21 +131,13 @@ public function startScrape() {
 
 
 // ask yes or no question
-public function questionYN($prompt1, $prompt2) {
-	$asking = true;
-	while ($asking) {
-		$answer = self::userPrompt($prompt1);
-		if ($answer == 'no') {
-			echo "the answer was no\n";
-			return false;
-		} elseif ($answer == 'yes') {
-			echo $prompt2;
-			return true;
-		} else {
-			echo self::YES_NO_PROMPT;
-		}
+public function questionYN($prompt, $acknowledge) {
+	$answer = strtolower(self::userPrompt($prompt . " (y/n)\n"));
+	while (!array_key_exists($answer, self::$YESNO)) {
+		echo self::YES_NO_PROMPT;
+		$answer = strtolower(self::userPrompt($prompt . " (y/n)\n"));
 	}
-	
+	return self::$YESNO[$answer];
 }
 
 
@@ -148,10 +154,10 @@ public function editEntry() {
 public static function askForSetReply($prompt, $options, $output_options=true) {
 	echo "\n";
 	if ($output_options) {
-		echo self::CHOOSE_OPTION;
+		echo self::CHOOSE_OPTION_REMINDER;
 		print_r($options);
 	}
-	$answer = self::userPrompt(constant("self::$prompt"));
+	$answer = strtolower(self::userPrompt(constant("self::$prompt")));
 	while ($answer != "exit" AND !array_key_exists($answer, $options)) {
 		echo "\n";
 		echo "Options:\n";
