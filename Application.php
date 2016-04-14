@@ -209,12 +209,16 @@ class Application {
 	}
 
 	// choose random result (has class property - courses or course objects)
-	public function randomCourse() { // fix this 
-		$e = count($this->courses) - 1; //  
-		$i = rand(0 ,$e);
-		return $this->courses[$i];
-	}
 
+	public function randomCourse($courses) { // fix this 
+		$e = count($courses); //
+		if ($e) {
+			$i = rand(1 ,$e - 1);
+			return $courses[$i];
+		} else {
+			return null;
+		}
+	}
 
 
 	public function addInfo($ui) {
@@ -352,7 +356,22 @@ class Application {
 			case "9":
 				echo "***************\nLOAD CSV TO DATABASE\n***************\n";
 				
+				$csv = new CSV();
+				$saved = $csv->readSavedData();
+				if ($saved) {
+					$choice = UserInterface::askForSetReply('CHOOSE_CSV_FILE', $saved);
+					
+					$filename = $saved[$choice];
+					$csv->filename = $filename;
+					$courses = $csv->getCourses();
+					$course = self::randomCourse($courses);
+					print_r($course);
 
+					$uni = $csv->getUni();
+					print_r($uni);
+				} else {
+					echo "There are no csv files available.\n";
+				}
 
 				break;	
 			case "e":
@@ -362,16 +381,6 @@ class Application {
 		}
 
 	}
-
-
-
-	// Methods for CSV related stuff
-	public function writeCoursesCSV() {
-
-	}
-
-
-
 
 } 
 

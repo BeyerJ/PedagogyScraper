@@ -17,11 +17,13 @@ const YES_NO_PROMPT = "Please answer yes or no \n";
 const NEW_SCRAPE = "Would you like to start a scrape?[yes/no]\n";
 const EDIT_DATA = "Would you like to edit a property?[yes/no]\n";
 const EDIT_CHOOSE = "Which property would you like to edit?\n";
-
-
+const UNI_INFO_PROMPT = "Would you like to enter the information for each university property?[yes/no]\n";
+const UNI_INFO = "Please enter the information for each property\n";
 const WRONG_OPTION = "Please choose one of the options or type 'exit' to quit.\n";
 const NULL_ANSWER = "Please enter a response or type 'exit' to quit.\n";
-const CHOOSE_OPTION = "Choose one of the options below.\n";
+const CHOOSE_CSV_FILE = "Choose one of the available csv files to load into the database.\n";
+const CHOOSE_OPTION = "Choose one of the options above.\n";
+const CHOOSE_OPTION_REMINDER = "Choose one of the options below.\n";
 const ANY_KEY = "Press Enter to continue.\n";
 
 
@@ -39,7 +41,7 @@ const GREETING = "\n\nThis is Pedagogy Scraper 1.0.\n\n";
 const NO_SCRAPER = "The scrapers I have don't work for this URL. Unable to proceed with scraping.\n\n\n";
 const NO_URL = "No URL input to work with.\n\n\n";
 
-const PAUSE_SCRAPE_PROMPT = "Would you like to save the data to a CSV so you can edit it later?[yes/no]\n";
+const SAVE_DATA_PROMPT = "Would you like to save the data to a CSV so you can edit it later?[yes/no]\n";
 const PULL_EDITED_DATA = "Would you like to retrieve edited data from a CSV?[yes/no]\n";
 const SELECT_CSV_FILE = "Please indicate the file you wish to open using the index []\n";
 
@@ -149,10 +151,10 @@ public function editEntry() {
 }
 
 
-public static function askForSetReply($prompt, $options, $output_options) {
+public static function askForSetReply($prompt, $options, $output_options=true) {
 	echo "\n";
 	if ($output_options) {
-		echo self::CHOOSE_OPTION;
+		echo self::CHOOSE_OPTION_REMINDER;
 		print_r($options);
 	}
 	$answer = strtolower(self::userPrompt(constant("self::$prompt")));
