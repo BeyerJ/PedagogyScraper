@@ -8,14 +8,14 @@ protected $OS = PHP_OS;
 const CATALOG_URL_PROMPT = "Please enter the university course catalog URL:\n";
 const SELECT_SCRAPER_PROMPT = "Which scraper would you like to use?\n";
 const FIRST_ENTRY = "The first entry of the scraper is:\n";
-const ANOTHER_ENTRY_PROMPT = "Would you like to see another entry?\n";
+const ANOTHER_ENTRY_PROMPT = "Would you like to see another entry?[yes/no]\n";
 const REPLY_TO_YES = "Awesome! Let me do the thing!\n";
 const SCRAPER_REPORT_PROMPT = "The following scrapers are available:\n";
-const SAVE_RESULTS_PROMPT = "Would you like to save the results of this scrape?\n";
+const SAVE_RESULTS_PROMPT = "Would you like to save the results of this scrape?[yes/no]\n";
 const WILL_SAVE = "I shall do that then\n";
 const YES_NO_PROMPT = "Please answer yes or no \n";
-const NEW_SCRAPE = "Would you like to start a scrape?\n";
-const EDIT_DATA = "Would you like to edit a property?\n";
+const NEW_SCRAPE = "Would you like to start a scrape?[yes/no]\n";
+const EDIT_DATA = "Would you like to edit a property?[yes/no]\n";
 const EDIT_CHOOSE = "Which property would you like to edit?\n";
 
 
@@ -27,6 +27,9 @@ const ASSIGN_COURSE_OPTION_TO_REGEX = "Which course property are you adding RegE
 const ASSIGN_REGEX = "Enter the regular expression below, encased in slashes. Example: /(?<year>[0-9]{4}-[0-9]{4})/\n";
 const DOES_THE_REGEX_WORK = "Does this regex work like you want it to?\n";
 
+const PAUSE_SCRAPE_PROMPT = "Would you like to save the data to a CSV so you can edit it later?[yes/no]\n";
+const PULL_EDITED_DATA = "Would you like to retrieve edited data from a CSV?[yes/no]\n";
+const SELECT_CSV_FILE = "Please indicate the file you wish to open using the index []\n";
 //const = "";
 
 /******METHODS******/
@@ -68,13 +71,12 @@ public function makeReadable($results) {
 }
 
 // Display results of scraper (first entry)
-public function displayResults($results) {
+public function displayResults($results) { // this should basically just get an array and print_r it to the screen or something
 	echo self::FIRST_ENTRY;
 	$i = 0;
 	echo $results[$i] . "\n";
 	if (self::questionYN(self::ANOTHER_ENTRY_PROMPT, self::REPLY_TO_YES) == true) {
-		$e = count($results);
-		$i = rand(1 ,$e);
+		
 		echo $results[$i] . "\n";
 	}
 	

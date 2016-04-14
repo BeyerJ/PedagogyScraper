@@ -56,20 +56,18 @@ class Application {
 		return $string;
 	}
 
+		public function __toArray() {
+
+	}
+
 	public function getDBConn() {
 		$this->mysql = DBConnection::getConnection();
 	}
 
 	// takes an array and puts it in the table of your choice
 	public function pushInsert($table, $value_array) {
-		$table_keys = '';
-		$table_values = '';
-		foreach ($value_array as $key => $value) {
-			$table_keys = $table_keys . $key . ",";
-			$table_values = $table_values . "'" . $value . "'" . ",";
-		}
-		$table_keys = rtrim($table_keys, ",");
-		$table_values = rtrim($table_values, ",");
+		$table_keys = self::makeTableKeys($value_array);
+		$table_values = self::makeTableValues($value_array);
 		$query = "INSERT INTO $table ($table_keys) VALUES ($table_values) ";
 		//$this->mysql->query($query);
 		echo $query . "\n";
@@ -83,9 +81,34 @@ class Application {
 		}
 	}
 
-	public function __toArray() {
-
+	// looks at the university object and then compare to entries in the database
+	public function compareData($table, $value_array) {
+		$university_title = $value_array['university_title'];
+		$country = $value_array['country'];
+		$query = "SELECT id, university_title, country, province_state FROM $table WHERE university_title LIKE '{$university_title}' AND country = '{$country}'";
+		//$this->mysql->query($query);
+		// $results = ;
+		// return $results; // make this into an associative array
+		echo $query . "\n";
 	}
+
+	public function makeTableKeys($value_array) {
+		$table_keys = '';
+		foreach ($value_array as $key => $value) {
+			$table_keys = $table_keys . $key . ",";
+		}
+		$table_keys = rtrim($table_keys, ",");
+	}
+
+	public function makeTableValues($value_array) {
+		$table_values = '';
+		foreach ($value_array as $key => $value) {
+			$table_values = $table_values . "'" . $value . "'" . ",";
+		}
+		$table_values = rtrim($table_values, ",");
+		return $table_values;
+	}
+
 
 	public function urlIsValid ($url) {
 		//TODO!
@@ -177,7 +200,7 @@ class Application {
 
 	// choose random result (has class property - courses or course objects)
 	public function randomCourse() { // fix this 
-		$e = count($this->courses); // movelogic for random to application 
+		$e = count($this->courses); //  
 		$i = rand(1 ,$e);
 		return $this->courses[$i];
 	}
