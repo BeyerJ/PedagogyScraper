@@ -7,6 +7,7 @@ class Application {
 	protected $url;
 	protected $xpath;
 	protected $university_id;
+	protected $university;
 	protected $courses = array();
 	protected $programs = array();
 	protected $available_scrapers = ['AcalogScraper', 'UofCalgaryScraper'];
@@ -18,6 +19,8 @@ class Application {
 		"2" => "Run a test scrape",
 		"3" => "Attempt a manual scrape",
 		"4" => "Reset scraper queries to default values",
+		"5" => "Output courses to CSV",
+		"6" => "Load CSV to Database",
 		"e" => "Exit"
 	);
 
@@ -244,6 +247,13 @@ class Application {
 						echo UserInterface::NO_SCRAPER;
 						$this->url = null;
 					}
+				$answer = UserInterface::questionYN("Is this a new University\n", "Nice\n");
+				if ($answer) {
+						$new_uni = new University;
+						$ui = new UserInterface();
+						$new_uni->addInfo($ui);
+						$this->university = $new_uni;
+					}	
 				}
 				break;
 			case "2":
@@ -270,6 +280,28 @@ class Application {
 					echo UserInterface::NO_URL;
 				}
 				break;
+			case "5":
+				echo "***************\nOUTPUT COURSES TO CSV\n***************\n";
+				/*
+				if (!$this->university) {
+					$new_uni = new University;
+					$ui = new UserInterface();
+					$new_uni->addInfo($ui);
+					$this->university = $new_uni;
+				}
+				$csv = new CSV;
+				$csv->makeCSV($this->university);
+				$csv->addCourses($this->courses);
+				$csv->writeObjects();
+				
+				*/
+				break;
+			case "6":
+				echo "***************\nLOAD CSV TO DATABASE\n***************\n";
+				
+
+
+				break;	
 			case "e":
 				echo UserInterface::BYE;
 				$this->on = false;
@@ -277,6 +309,16 @@ class Application {
 		}
 
 	}
+
+
+
+	// Methods for CSV related stuff
+	public function writeCoursesCSV() {
+
+	}
+
+
+
 
 } 
 
