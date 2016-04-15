@@ -36,7 +36,7 @@ class GeneralScraper
 
 		$n = 1;
 		foreach ($course_ex->properties as $key => $value) {
-			if (!in_array($key, ["id", "university_id", "created", "updated"])) {
+			if (!in_array($key, array("id", "university_id", "created", "updated"))) {
 				$this->course_options[$n] = $key;
 				$this->queries[$key . "_query"] = null;
 				$this->queries[$key . "_regex"] = null; 
@@ -93,7 +93,7 @@ class GeneralScraper
 			if ($text AND !in_array(strtolower($text), $this->stop_list)) {
 				echo "\n\nTEXT (" . $index . "): " . $text . "\n";
 				//Ask the user if this particular text corresponds to any course values that they would want to grab
-				$option = UserInterface::askForSetReply('ASSIGN_COURSE_OPTION_TO_TEXT', ["a" => "add regex", "0" => "none"] + $this->course_options + ["c" => "cancel"], true);
+				$option = UserInterface::askForSetReply('ASSIGN_COURSE_OPTION_TO_TEXT', array("a" => "add regex", "0" => "none") + $this->course_options + array("c" => "cancel"), true);
 				//Option "a" stands for adding new regular expression queries in addition to xpath queries.
 				//This allows to account for such cases when the same piece of text contains several pieces of relevant information, such as:
 				//"(term: spring) This is an introductory course to Accounting!"
@@ -106,7 +106,7 @@ class GeneralScraper
 					case 'a':
 						echo "\n\nTEXT (" . $index . "): " . $text . "\n";
 						//ask the user which course property they want to add a regex for
-						$add = UserInterface::askForSetReply('ASSIGN_COURSE_OPTION_TO_REGEX', ["s" => "stop adding regex"] + $this->course_options, true);
+						$add = UserInterface::askForSetReply('ASSIGN_COURSE_OPTION_TO_REGEX', array("s" => "stop adding regex") + $this->course_options, true);
 						$regs = array();
 						//option "s" is "stop adding regex for this particular piece of text -- either because the user has added all they wanted or because they're sick of trying to make it work"
 						while ($add != "s") {
@@ -122,7 +122,7 @@ class GeneralScraper
 								$regs[$this->course_options[$add]] = $regex;
 							}
 							echo "\n\nTEXT (" . $index . "): " . $text . "\n";
-							$add = UserInterface::askForSetReply('ASSIGN_COURSE_OPTION_TO_REGEX', ["s" => "stop adding regex"] + $this->course_options, true);
+							$add = UserInterface::askForSetReply('ASSIGN_COURSE_OPTION_TO_REGEX', array("s" => "stop adding regex") + $this->course_options, true);
 						} //add the resulting array of regular expressions to the correspondences
 						$correspondences[$index] = $regs;
 						break;
@@ -159,7 +159,7 @@ class GeneralScraper
 		} else {
 			echo "RESULT: no match\n";
 		}
-		return UserInterface::askForSetReply('DOES_THE_REGEX_WORK', ["0" => "This doesn't work. I want to enter another regex", "y" => "This regex works, assign it to property", "c" => "I changed my mind, I don't want to assign this property a regex"], true);
+		return UserInterface::askForSetReply('DOES_THE_REGEX_WORK', array("0" => "This doesn't work. I want to enter another regex", "y" => "This regex works, assign it to property", "c" => "I changed my mind, I don't want to assign this property a regex"), true);
 	}
 
 
@@ -250,7 +250,10 @@ class GeneralScraper
 					preg_match($this->$regex, $result, $matches);
 					if ($matches) {
 						$result = $matches[$propname];
-						$this->current_course->$propname .= $result . " ";
+						if ($this->current_course->$propname) {
+							$this->current_course->$propname .= " ";
+						}
+						$this->current_course->$propname .= $result;
 					} else {
 						$this->logs[] = "Property '$propname', regex '{$this->$regex}' - no regex match in '" . $result . "'\n";
 					}
@@ -269,9 +272,13 @@ class GeneralScraper
 			$links = $this->findNodes($this->link_query);
 			$this->current_links = $this->getNodeValues($links);
 		}
+		$n = 0;
 		if ($this->current_links) {
 			echo "\nLinks on this page: " . count($this->current_links) . "\n";
 			foreach ($this->current_links as $link) {
+				if ($n > 5) {
+					break;
+				}
 				$n++;
 				echo "*";
 				$this->xpath = Application::takeUrlReturnXpath($dir . '/' . $link);
@@ -395,7 +402,9 @@ class GeneralScraper
 // Outputs the queries
 	public function outputQueries() {
 		foreach ($this->queries as $query => $value) {
-			echo "-- --" . $query . " : " . $value . "\n";
+			if ($value) {
+				echo "     '" . $query . "': '" . $value . "'\n";
+			}
 		}
 	}
 }

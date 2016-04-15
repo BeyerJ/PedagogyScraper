@@ -17,6 +17,17 @@ class University extends CalendarObject {
 			'updated' => null
 			);
 
+	public function __toString () {
+		$uni_info = "University information:\n";
+		$uni_info .= "     Title: " . $this->university_title . "\n";
+		$uni_info .= "     Host: " . $this->host . "\n";
+		$uni_info .= "     Country: " . $this->country . "\n";
+		$uni_info .= "     State/Province: " . $this->province_state . "\n";
+		$uni_info .= "     Type: " . $this->type . "\n";
+		return $uni_info;
+	}
+
+
 /// whois command thing
 
 // output object to console

@@ -8,16 +8,16 @@ protected $OS = PHP_OS;
 const CATALOG_URL_PROMPT = "Please enter the university course catalog URL:\n";
 const SELECT_SCRAPER_PROMPT = "Which scraper would you like to use?\n";
 const FIRST_ENTRY = "The first entry of the scraper is:\n";
-const ANOTHER_ENTRY_PROMPT = "Would you like to see another entry?[yes/no]\n";
+const ANOTHER_ENTRY_PROMPT = "Would you like to see another entry?";
 const REPLY_TO_YES = "Awesome! Let me do the thing!\n";
 const SCRAPER_REPORT_PROMPT = "The following scrapers are available:\n";
-const SAVE_RESULTS_PROMPT = "Would you like to save the results of this scrape?[yes/no]\n";
+const SAVE_RESULTS_PROMPT = "Would you like to save the results of this scrape?";
 const WILL_SAVE = "I shall do that then\n";
 const YES_NO_PROMPT = "Please answer yes or no \n";
-const NEW_SCRAPE = "Would you like to start a scrape?[yes/no]\n";
-const EDIT_DATA = "Would you like to edit a property?[yes/no]\n";
+const NEW_SCRAPE = "Would you like to start a scrape?";
+const EDIT_DATA = "Would you like to edit a property?";
 const EDIT_CHOOSE = "Which property would you like to edit?\n";
-const UNI_INFO_PROMPT = "Would you like to enter the information for each university property?[yes/no]\n";
+const UNI_INFO_PROMPT = "Would you like to enter the information for each university property?";
 const UNI_INFO = "Please enter the information for each property\n";
 const WRONG_OPTION = "Please choose one of the options or type 'exit' to quit.\n";
 const NULL_ANSWER = "Please enter a response or type 'exit' to quit.\n";
@@ -38,9 +38,10 @@ const DOES_THE_REGEX_WORK = "Does this regex work like you want it to?\n";
 const MAIN_MENU = "Enter your command:\n";
 const BYE = "\n\n*************************\nThank you for using Pedagogy Scraper! See you some other time!\n";
 const GREETING = "\n\nThis is Pedagogy Scraper 1.0.\n\n";
-const NO_SCRAPER = "The scrapers I have don't work for this URL. Unable to proceed with scraping.\n\n\n";
-const NO_URL = "No URL input to work with.\n\n\n";
-const NO_COURSES = "There are currently no scraped courses in the application's memory.\n\n\n";
+const NO_SCRAPER = "The scrapers I have don't work for this URL. Unable to proceed with scraping.\n";
+const NO_URL = "No URL input to work with.\n";
+const NO_COURSES = "There are currently no scraped courses in the application's memory.\n";
+const NO_CSV = "No csv files available.\n";
 
 const ECHO_COURSE = "How would you like to echo the course out?\n";
 const OUTPUT_PARTICULAR_COURSE = "Which course should be echoed? Input a number from 1 to how many scraped courses there currently are.\n";
@@ -159,13 +160,15 @@ public static function askForSetReply($prompt, $options, $output_options=true) {
 	echo "\n";
 	if ($output_options) {
 		echo self::CHOOSE_OPTION_REMINDER;
-		print_r($options);
+		$opt = print_r($options, true);
+		echo substr($opt, 6);
 	}
 	$answer = strtolower(self::userPrompt(constant("self::$prompt")));
 	while ($answer != "exit" AND !array_key_exists($answer, $options)) {
 		echo "\n";
 		echo "Options:\n";
-		print_r($options);
+		$opt = print_r($options, true);
+		echo substr($opt, 6);
 		$answer = self::userPrompt(self::WRONG_OPTION . "\n" . constant("self::$prompt"));
 	}
 	echo "--------------------------\n";
@@ -178,12 +181,17 @@ public static function askForSetReply($prompt, $options, $output_options=true) {
 }
 
 
-public static function askForInput($prompt) {
+public static function askForInput($prompt, $custom_prompt=null) {
 	echo "\n";
-	$answer = self::userPrompt(constant("self::$prompt"));
+	if($custom_prompt) {
+			$p = $custom_prompt;
+	} else {
+		$p = constant("self::$prompt");
+	} 
+	$answer = self::userPrompt($p);
 	while (!$answer) {
 		echo "\n";
-		$answer = self::userPrompt(self::NULL_ANSWER . "\n" . constant("self::$prompt"));
+		$answer = self::userPrompt(self::NULL_ANSWER . "\n" . $p);
 	}
 	echo "--------------------------\n";
 	if ($answer == "exit") {

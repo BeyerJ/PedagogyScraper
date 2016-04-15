@@ -12,6 +12,7 @@ class CSV
 	public $filename;
 	protected $university;
 	protected $courses = array();
+	protected $new_uni = false;
 
 	const SAVED_COURSE_DATA = 'results/saved_course_data.csv';
 	
@@ -45,26 +46,32 @@ class CSV
 		$this->filename = self::filenameCSV($university);
 		$greeting = array("This is the raw data from the institution: " . $university->university_title . " please edit as needed");
 		if (self::checkExists() == false) {
-			echo "I have made a thing for " . $university->university_title . "\n";
-			fputcsv(self::openPipeA(), $greeting);	
+			echo "\n Created a csv file for " . $university->university_title . "\n";
+			fputcsv(self::openPipeA(), $greeting);
+			$this->saveData();
+			$this->new_uni = true;
 		}
-		$keys = array();
-		foreach ($this->university->properties as $key => $value) {
-			$keys[] = $key;
+		if ($this->new_uni) {
+			$keys = array();
+			foreach ($this->university->properties as $key => $value) {
+				$keys[] = $key;
+			}
+
+			fputcsv(self::openPipeA(), $keys);
+			self::writeProp($university);
 		}
-		fputcsv(self::openPipeA(), $keys);
-		self::writeProp($university);
 	}
 
 
 	public function addCourses($courses) {
 		$this->courses = $courses;
-		fputcsv(self::openPipeA(), self::writeKeys());
+		if ($this->new_uni) {
+			fputcsv(self::openPipeA(), self::writeKeys());
+		}
 	}
 
 	// writes the university and course objects into the csv
 	public function writeObjects() {
-		
 		foreach ($this->courses as $course) {
 			self::writeProp($course);
 		}
@@ -103,7 +110,7 @@ class CSV
 			fputcsv($stdout, $row);
 		}
 		fclose($stdout);
-		}
+	}
 
 	// gets an assoc array of the saved scrapes so the UI can echo them and the user can select one to pull and push into the database after they have edited the information
 	public function readSavedData() {
@@ -157,13 +164,11 @@ class CSV
 			for ($i=0; $i < count($course[4]); $i++) { 
 				$new_key = $key[$i];
 				$new_array[$new_key] = $course[$e][$i];
-
 			}
 		$edited_courses[] = $new_array;
 		}
 		fclose($pipeline);
 		return $edited_courses;
-		
 	}
 
 	// will retrieve the university information
@@ -177,7 +182,7 @@ class CSV
 			$new_key = $key[$i];
 			$new_array[$new_key] = $uni_data[$i];
 		}
-		print_r($new_array);
+		return $new_array;
 	}
 
 	// will check if there is a file for saved course info, from a paused scrape. if not it will make it
@@ -195,7 +200,7 @@ class CSV
 		$saved_file = array($this->filename);
 		fputcsv($pipeline, $saved_file);
 		fclose($pipeline);
-		echo "The data from " . $this->university->university_title . " has been paused been saved to " . $this->filename . "\n";
+		echo "\nThe data from " . $this->university->university_title . " has been saved to " . $this->filename . "\n";
 	}
 
 	// check if the application object has a university object with data

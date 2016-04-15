@@ -9,7 +9,7 @@ class Application {
 	protected $university;
 	protected $courses = array();
 	protected $programs = array();
-	protected $available_scrapers = ['AcalogScraper', 'UofCalgaryScraper'];
+	protected $available_scrapers = array('AcalogScraper', 'UofCalgaryScraper');
 	protected $scrapers = array();
 	protected $chosen_scraper;
 	protected $mysql;
@@ -35,6 +35,7 @@ class Application {
 			$this->scrapers[$scr->id] = $scr;
 		}
 		$this->getDBConn();
+		$this->university = new University;
 	}
 
 
@@ -48,7 +49,7 @@ class Application {
 
 
 	/*************************************
-	METHODS FOR CONNECTING TO THE DATABASE
+	METHODS FOR DEALING WITH THE DATABASE
 	**************************************/
 
 	public function getDBConn() {
@@ -57,64 +58,81 @@ class Application {
 		}
 	}
 
-	// takes an array and a table name, creates 
-	public function pushInsert($table, $value_array) {
-		$table_keys = self::makeTableKeys($value_array);
-		$table_values = self::makeTableValues($value_array);
-		$query = "INSERT INTO $table ($table_keys) VALUES ($table_values) ";
-		//$this->mysql->query($query);
-		echo $query . "\n";
-	}
-
-
-	// ?????
-	public function pushCourses($table) {
-		for ($i=0; $i < count($this->courses); $i++) { 
-			$properties = $this->courses[$i]->properties;
-			self::pushInsert($table, $properties);
+	protected function cleanUp ($string) {
+		if ($string == "NOW()") {
+			return "NOW()";
+		} else if (strlen($string) > 0) {
+			return "'" . $this->mysql->real_escape_string($string) . "'";
+		} else {
+			return "NULL";
 		}
 	}
 
-	// looks at the university object and then compare to entries in the database
-	public function compareData($table, $value_array) {
-		$university_title = $value_array['university_title'];
-		$country = $value_array['country'];
-		$query = "SELECT id, university_title, country, province_state FROM $table WHERE university_title LIKE '{$university_title}' AND country = '{$country}'";
-		//$this->mysql->query($query);
-		// $results = ;
-		// return $results; // make this into an associative array
-		echo $query . "\n";
+	protected function cleanUpOld ($string) {
+		if (strlen($string) > 0) {
+			return "'" . $string . "'";
+		} else {
+			return "NULL";
+		}
 	}
 
+	// takes an array and a table name, creates 
+	public function pushInsert($table, $value_array) {
+		$table_keys = $this->makeTableKeys($value_array);
+		$table_values = $this->makeTableValues($value_array);
+		$query = "INSERT INTO $table ($table_keys) VALUES ($table_values)";
+		$this->mysql->query($query);
+		//echo $query . "\n";
+	}
+
+
+	// push an array consisting of courses (each of which is an array of course properties) to the database
+	public function pushCourses($courses) {
+		if (!$this->university->id) {
+			echo "Can't push courses because university id is not defined.\n";
+		} else {
+			foreach ($courses as $course) {
+				$course["university_id"] = $this->university->id;
+				$course["created"] = "NOW()";
+				$this->pushInsert("course", $course);
+			}
+		}
+	}
+
+
+	public function grabUniversityId () {
+		if ($this->mysql) {
+			$this->lookForUniInDatabase();
+			if(!$this->university->id) {
+				$uni_props = $this->university->properties;
+				$uni_props["created"] = "NOW()";
+				$this->pushInsert("university", $uni_props);
+				$this->university->id = $this->mysql->insert_id;
+			}
+		} else {
+			echo "Can't grab university id from database because there is no database connection.\n";
+		}
+	}
+
+	// create the string for a list of columns for an INSERT query
 	public function makeTableKeys($value_array) {
 		$table_keys = '';
 		foreach ($value_array as $key => $value) {
-			$table_keys = $table_keys . $key . ",";
+			$table_keys .= $key . ",";
 		}
 		$table_keys = rtrim($table_keys, ",");
+		return $table_keys;
 	}
 
+	// create the string for a list of values for an INSERT query
 	public function makeTableValues($value_array) {
 		$table_values = '';
 		foreach ($value_array as $key => $value) {
-			$table_values = $table_values . "'" . $value . "'" . ",";
+			$table_values .= $this->cleanUp($value)  . ",";
 		}
 		$table_values = rtrim($table_values, ",");
 		return $table_values;
 	}
-
-
-	//check if the url is valid
-	public function urlIsValid ($url) {
-		//TODO!
-		$well_formed = filter_var($url, FILTER_VALIDATE_URL);
-		if (!$well_formed) {
-			echo "Badly-formed URL!\n";
-			return false;
-		}
-		return true;
-	}
-
 
 
 	/************************************
@@ -171,6 +189,19 @@ class Application {
 	}
 
 
+	//check if the url is valid
+	public function urlIsValid ($url) {
+		//TODO!
+		$well_formed = filter_var($url, FILTER_VALIDATE_URL);
+		if (!$well_formed) {
+			echo "Badly-formed URL!\n";
+			return false;
+		}
+		return true;
+	}
+
+
+
 	//takes a url, calls getDataFromURL to curl data from it
 	//then runs it through tidy using tidyHtml
 	//then creates a dom and xpath object for it, using buildDomFromHtml
@@ -186,34 +217,87 @@ class Application {
 	METHODS FOR SETTING UP THE UNIVERSITY OBJECT
 	********************************************/
 
-
-
-
-	// Lets the user change one property of a university object, though I bet it could do any child of the CalendarObject, needs testing
-	public function editProperty($property, $university) {
-		echo $property . " is equal to " . $university->$property . "\n";
-		$new_value = UserInterface::userPrompt("What would you like to change " . $property . " to?\n");
-		$check = "You chose " . $new_value . ", is this ok?\n";
-		$editing = true;
-		while ($editing) {
-			$answer = UserInterface::questionYN($check, "I'll change it then\n");
-			if ($answer == true) {
-				$university->$property = $new_value;
-				echo "I have changed " . $property . " to " . $university->$property . "\n";
-				$editing = false;
-			} else {
-				$new_value = UserInterface::userPrompt("What would you like to change " . $property . " to?\n");
-				$answer = UserInterface::questionYN($check, "I'll change it then\n");
-			}	
+	//Send a select query to database looking for a university with this host
+	public function lookForUniInDatabase () {
+		echo "Trying to find the university in the database.\n";
+		$host = parse_url($this->url, PHP_URL_HOST);
+		if (!$host) {
+			$host = $this->university->host;
+		}
+		if ($host) {
+			$query = "SELECT * FROM university WHERE host='" . $host . "'";
+			//echo $query;
+			$result = $this->mysql->query($query);
+			$row = $result->fetch_assoc();
+			if($row) {
+				foreach ($row as $varkey => $varvalue) {
+					$this->university->$varkey = $varvalue;
+				}
+			}
+		}
+		if ($this->university->id) {
+			echo "Initiated university from the database.\n";
+		} else {
+			echo "Couldn't find the university in the database.\n";
 		}
 	}
 
-	// choose random result (has class property - courses or course objects)
+	//Main method for selecting university:
+	//1. Create uni object if it doesn't exist
+	//2. Try to find the university in the database
+	//3. If the university object has a filled-in title, output the object on the screen and ask user if they want to change it
+	//4. If yes, or if the university object doesn't have a title, ask user to populate university object manually
+	public function selectUniversity() {
+		if ($this->mysql) {
+			$this->lookForUniInDatabase();
+		}
+		$redo = true;
+		if ($this->university->university_title) {
+			echo "\nCurrent " . $this->university;
+			$redo = UserInterface::questionYN("Change university properties?");
+		}
+		if ($redo) {
+			$this->manualUniversityInput();
+			echo "\n\nCurrent " . $this->university;
+		}
+	}
 
-	public function randomCourse($courses) { // fix this 
-		$e = count($courses); //
+
+	//Populate university object manually:
+	//Output university title, country, province/state and type one by one and ask if the user wants to change them
+	//If yes, or if they're not set up, ask user for input, save it to the university property
+	public function manualUniversityInput() {
+		echo "\nPlease input information about the university.\n";
+		foreach (array("university_title" => "university title", "country" => "country", "province_state" => "province or state", "type" => "type of institution") as $key => $value) {
+			$redo = true;
+			if ($this->university->$key) {
+				echo "\nCurrent " . $value . ": " . $this->university->$key . "\n";
+				$redo = UserInterface::questionYN("Change?");
+			}
+			if ($redo) {
+				$this->university->$key = UserInterface::askForInput("", "Please enter $value:\n");
+			}
+		}
+		echo "Resulting " . $this->university;
+		if (!UserInterface::questionYN("Is this the correct university information?")) {
+			echo "\nResetting university information.\n\n";
+			$this->manualUniversityInput();
+		}
+	}
+
+
+
+
+
+	/*********************
+	METHODS FOR MAIN MENU
+	*********************/
+
+	// choose random item out of an array
+	public function randomCourse($courses) {
+		$e = count($courses);
 		if ($e) {
-			$i = rand(1 ,$e - 1);
+			$i = mt_rand(1 ,$e - 1);
 			return $courses[$i];
 		} else {
 			return null;
@@ -221,26 +305,12 @@ class Application {
 	}
 
 
-	public function addInfo($ui) {
-		$start = $ui->questionYN(UserInterface::UNI_INFO_PROMPT, "Good Choice\n");
-		if ($start) {
-			foreach ($this->properties as $key => $value) {
-				echo UserInterface::UNI_INFO;
-				$prompt = 'Enter info for ' . $key . "\n";
-				$answer = $ui->userPrompt($prompt);
-				$this->properties[$key] = $answer;
-
-			}
-		//return $this->properties;
-		}
-		
-	}
-
-
-	/*********************
-	METHODS FOR MAIN MENU
-	*********************/
-
+	//Show the application's status:
+	//1. The current URL
+	//2. The currently chosen scraper
+	//3. The university information
+	//4. The number of saved courses
+	//5. Queries set up in the currently chosen scraper
 	public function showStatus() {
 		if ($this->url) {
 			echo "-- Current URL: " . $this->url . "\n";
@@ -252,29 +322,27 @@ class Application {
 		} else {
 			echo "-- No scraper chosen.\n";
 		}
-		if ($this->university) {
-			echo "-- University information: \n";
+		if ($this->university->university_title) {
+			echo "-- ";
 			echo $this->university;
 		} else {
 			echo "-- No university set up.\n";
 		}
-		if(empty($this->courses)) {
+		if($this->courses) {
 			$number_courses = count($this->courses);
-			echo "-- There are " . $number_courses . " scraped courses.\n";
+			echo "-- There are " . $number_courses . " scraped courses in the application's memory.\n";
 		} else {
-			"-- No Courses -- \n";
+			echo "-- No courses in the application's memory.\n";
 		}
 		if ($this->chosen_scraper) {
-			echo "-- The queries for the scraper are:\n";
+			echo "-- Queries currently set up for the scraper: \n";
 			$this->chosen_scraper->outputQueries();
-		} else {
-			echo "-- You do not have any queries yet";
 		}
-
 	}
 
 
-
+	//method for the main menu
+	//gets called from the main.php script
 	public function mainMenu() {
 		echo UserInterface::GREETING;
 		$user_command = UserInterface::askForSetReply('MAIN_MENU', $this->menu_items, true);
@@ -283,6 +351,7 @@ class Application {
 				echo "***************\nSTATUS\n***************\n";
 				$this->showStatus();
 				break;
+
 			case "1":
 				echo "***************\nENTERING NEW URL\n***************\n";
 				$url = UserInterface::askForInput('CATALOG_URL_PROMPT');
@@ -294,8 +363,9 @@ class Application {
 						$scraper->xpath = $xpath;
 						$applies = $scraper->checkIfApplies();
 						if($applies) {
-							echo "\n\nChose " . $scraper->name . "\n";
+							echo "\nChose " . $scraper->name . "\n";
 							$this->chosen_scraper = $scraper;
+							$this->university->host = parse_url($this->url, PHP_URL_HOST);
 							break;
 						}
 					}
@@ -303,17 +373,18 @@ class Application {
 						echo UserInterface::NO_SCRAPER;
 						$this->url = null;
 					}
-				/*$answer = UserInterface::questionYN("Is this a new University", "OK\n");
-				if ($answer) {
-						$new_uni = new University;
-						$new_uni->addInfo($ui);
-						$this->university = $new_uni;
-					}*/	
 				}
 				break;
+
 			case "2":
 				echo "***************\nSELECTING UNIVERSITY\n***************\n";
+				$redo = true;
+				$this->selectUniversity();
+				if ($this->url) {
+					$this->university->host = parse_url($this->url, PHP_URL_HOST);
+				}
 				break;
+
 			case "3":
 				echo "***************\nRUNNING TEST SCRAPE\n***************\n";
 				if ($this->chosen_scraper) {
@@ -322,6 +393,7 @@ class Application {
 					echo UserInterface::NO_URL;
 				}
 				break;
+
 			case "4":
 				echo "***************\nRUNNING MANUAL SCRAPE\n***************\n";
 				if ($this->chosen_scraper) {
@@ -330,14 +402,16 @@ class Application {
 					echo UserInterface::NO_URL;
 				}
 				break;
+
 			case "5":
 				echo "***************\nRESETTING SCRAPER QUERIES\n***************\n";
 				if ($this->chosen_scraper) {
 					$this->chosen_scraper->resetScraperQueries();
 				} else {
-					echo UserInterface::NO_URL;
+					echo UserInterface::NO_SCRAPER;
 				}
 				break;
+
 			case "6":
 				echo "***************\nRUNNING SCRAPE\n***************\n";
 				$purge = UserInterface::questionYN("Would you link to purge the currently scraped courses from the application's memory?");
@@ -354,12 +428,13 @@ class Application {
 					echo UserInterface::NO_URL;
 				}
 				break;
+
 			case "7":
 				echo "***************\nECHOING COURSE FROM ALREADY SCRAPED\n***************\n";
 				if ($this->courses) {
 					$count = count($this->courses);
 					echo "There are currenly " . $count . " scraped courses in the application's memory.\n";
-					$random = UserInterface::askForSetReply('ECHO_COURSE', ["0" => "Choose a particular course by number", "1" => "Output a random course"]);
+					$random = UserInterface::askForSetReply('ECHO_COURSE', array("0" => "Choose a particular course by number", "1" => "Output a random course"));
 					if (!$random) {
 						for($n = 0; $n < $count; $n++) {
 							$course_numbers[$n+1] = "Scraped course number $n";
@@ -375,40 +450,44 @@ class Application {
 					echo UserInterface::NO_COURSES;
 				}
 				break;
+
 			case "8":
 				echo "***************\nOUTPUTTING COURSES TO CSV\n***************\n";
-				
-				if ($this->courses){
+				if ($this->courses) {
+					$this->selectUniversity();
 					$csv = new CSV;
 					$csv->makeCSV($this->university);
 					$csv->addCourses($this->courses);
 					$csv->writeObjects();
-					echo "I saved the courses to the database\n";
+					echo "Output the courses to a csv file.\n";
+				} else {
+					echo UserInterface::NO_COURSES;
 				}
-			
-				
-			
 				break;
+
 			case "9":
 				echo "***************\nLOAD CSV TO DATABASE\n***************\n";
 				$csv = new CSV();
 				$saved = $csv->readSavedData();
 				if ($saved) {
 					$choice = UserInterface::askForSetReply('CHOOSE_CSV_FILE', $saved);
-					
 					$filename = $saved[$choice];
 					$csv->filename = $filename;
 					$courses = $csv->getCourses();
-					$course = self::randomCourse($courses);
-					print_r($course);
-
 					$uni = $csv->getUni();
-					print_r($uni);
+					if ($uni) {
+						$this->university->initializeFromArray($uni);
+					}
+					if (!$this->mysql) {
+						$this->getDBConn();
+					}
+					$this->grabUniversityId();
+					$this->pushCourses($courses);
 				} else {
-					echo "There are no csv files available.\n";
+					echo UserInterface::NO_CSV;
 				}
+				break;
 
-				break;	
 			case "e":
 				echo UserInterface::BYE;
 				$this->on = false;

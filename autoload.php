@@ -1,6 +1,6 @@
 <?php
 
-$path = array('.\scraperscripts', '.\results');
+$path = array('.\scraperscripts', '.\results', './scraperscripts', './results');
 
 for ($i=0; $i < count($path); $i++) { 
 	set_include_path(get_include_path() . PATH_SEPARATOR . $path[$i]);
