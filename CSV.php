@@ -173,7 +173,7 @@ class CSV
 		}
 		$key = $row[1];
 		$uni_data = $row[2];
-		for ($i=0; $i < (count($uni_data) - 1); $i++) { 
+		for ($i=0; $i < count($uni_data); $i++) { 
 			$new_key = $key[$i];
 			$new_array[$new_key] = $uni_data[$i];
 		}

@@ -380,7 +380,7 @@ class GeneralScraper
 
 	
 
-// scrape university info (name and such) (because every one should do this) (maybe, fuck I don't know)
+// scrape university info (name and such) (because every one should do this) 
 	public function scrapeUniversityInfo($query) {
 		$uni = new University();
 		$alt = $this->xpath->query($query);
@@ -389,6 +389,14 @@ class GeneralScraper
 			$info = $value->nodeValue; 
 			}
 		return $info;
+	}
+
+
+// Outputs the queries
+	public function outputQueries() {
+		foreach ($this->queries as $query => $value) {
+			echo "-- --" . $query . " : " . $value . "\n";
+		}
 	}
 }
 

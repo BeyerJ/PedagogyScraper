@@ -258,6 +258,18 @@ class Application {
 		} else {
 			echo "-- No university set up.\n";
 		}
+		if(empty($this->courses)) {
+			$number_courses = count($this->courses);
+			echo "-- There are " . $number_courses . " scraped courses.\n";
+		} else {
+			"-- No Courses -- \n";
+		}
+		if ($this->chosen_scraper) {
+			echo "-- The queries for the scraper are:\n";
+			$this->chosen_scraper->outputQueries();
+		} else {
+			echo "-- You do not have any queries yet";
+		}
 
 	}
 
@@ -365,19 +377,17 @@ class Application {
 				break;
 			case "8":
 				echo "***************\nOUTPUTTING COURSES TO CSV\n***************\n";
-				/*
-				if (!$this->university) {
-					$new_uni = new University;
-					$ui = new UserInterface();
-					$new_uni->addInfo($ui);
-					$this->university = $new_uni;
-				}
-				$csv = new CSV;
-				$csv->makeCSV($this->university);
-				$csv->addCourses($this->courses);
-				$csv->writeObjects();
 				
-				*/
+				if ($this->courses){
+					$csv = new CSV;
+					$csv->makeCSV($this->university);
+					$csv->addCourses($this->courses);
+					$csv->writeObjects();
+					echo "I saved the courses to the database\n";
+				}
+			
+				
+			
 				break;
 			case "9":
 				echo "***************\nLOAD CSV TO DATABASE\n***************\n";
