@@ -24,7 +24,6 @@ class AcalogScraper extends GeneralScraper {
 
 
 	public function checkIfApplies () {
-		echo "Checking if " . $this->name . " applies to URL '" . $this->url . "'.\n";
 		$query = "//a[contains(@href, 'http://www.acalog.com') and contains(text(), 'Acalog')]";
 		$nodes = $this->findNodes($query);
 		return !(empty($nodes));

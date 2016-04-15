@@ -17,7 +17,7 @@ class GeneralScraper
 
 	protected $current_node; //the node 
 	protected $current_links; //an array of urls that lead to CoursePages from the current page
-	protected $courses; //the resulting array of course objects the scraper created
+	public $courses; //the resulting array of course objects the scraper created
 	protected $current_course; //the course object the scraper is working on currently --> used by scrapeCoursePage and grabCourseProp
 	protected $queries = array(); //an array of xpath queries and regex the scraper uses for looking up particular information on the webpage
 	protected $course_options = array(); //an array of options 
@@ -146,6 +146,7 @@ class GeneralScraper
 		}
 		//save the resulting array for posteriority
 		$this->correspondences = $correspondences;
+		print_r($this->correspondences);
 	}
 
 	//matches a regular expression against the string, looking specifically for a pointed out section with label $propname
@@ -175,9 +176,9 @@ class GeneralScraper
 					$this->$regex_title = $regex;
 					$this->$query_title = "(" . $this->texts_query . ")[" . $key . "]";
 				}
-			//if the element is a string, e.g. 11 => "description"
-			//then append the xpath query "(~query to look for text)[11]" to the end of "description_query"
-			} elseif ($value != "none") {
+			//if the element is a string, e.g. 15 => "description"
+			//then append the xpath query "(~query to look for text)[15]" to the end of "description_query"
+			} else if ($value != "none") {
 		 		$query_title = $value . "_query";
 		 		if ($this->$query_title) {
 		 			$this->$query_title .= " | ";
@@ -251,8 +252,10 @@ class GeneralScraper
 						$result = $matches[$propname];
 						$this->current_course->$propname .= $result . " ";
 					} else {
-						$this->logs[] = "Property '$propname', regex '{$this->regex}' - no regex match in '" . $result . "'\n";
+						$this->logs[] = "Property '$propname', regex '{$this->$regex}' - no regex match in '" . $result . "'\n";
 					}
+				} else {
+					$this->current_course->$propname .= $result . " ";
 				}
 			}
 		} 
@@ -269,6 +272,7 @@ class GeneralScraper
 		if ($this->current_links) {
 			echo "\nLinks on this page: " . count($this->current_links) . "\n";
 			foreach ($this->current_links as $link) {
+				$n++;
 				echo "*";
 				$this->xpath = Application::takeUrlReturnXpath($dir . '/' . $link);
 				$this->scrapeCoursePage();
@@ -333,6 +337,7 @@ class GeneralScraper
 
 		echo "Final result:\n";
 		print_r($this->current_course);
+		print_r($this->queries);
 	}
 
 

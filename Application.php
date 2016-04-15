@@ -21,7 +21,7 @@ class Application {
 		"4" => "Attempt a manual scrape",
 		"5" => "Reset scraper queries to default values",
 		"6" => "Run a scrape with current queries",
-		"7" => "Push courses to Database",
+		"7" => "Echo course from already scraped",
 		"8" => "Output courses to CSV",
 		"9" => "Load CSV to Database",
 		"e" => "Exit"
@@ -328,14 +328,40 @@ class Application {
 				break;
 			case "6":
 				echo "***************\nRUNNING SCRAPE\n***************\n";
+				$purge = UserInterface::questionYN("Would you link to purge the currently scraped courses from the application's memory?");
+				if ($purge) {
+					$this->courses = array();
+				}
 				if ($this->chosen_scraper) {
 					$this->chosen_scraper->runScrape();
+					$save_result = UserInterface::questionYN("Would you like to add the results of this scrape to the application's memory?");
+					if ($save_result) {
+						$this->courses = $this->courses + $this->chosen_scraper->courses;
+					}
 				} else {
 					echo UserInterface::NO_URL;
 				}
 				break;
 			case "7":
-				echo "***************\nPUSHING COURSES TO DATABASE\n***************\n";
+				echo "***************\nECHOING COURSE FROM ALREADY SCRAPED\n***************\n";
+				if ($this->courses) {
+					$count = count($this->courses);
+					echo "There are currenly " . $count . " scraped courses in the application's memory.\n";
+					$random = UserInterface::askForSetReply('ECHO_COURSE', ["0" => "Choose a particular course by number", "1" => "Output a random course"]);
+					if (!$random) {
+						for($n = 0; $n < $count; $n++) {
+							$course_numbers[$n+1] = "Scraped course number $n";
+						}
+						$output_course = UserInterface::askForSetReply('OUTPUT_PARTICULAR_COURSE', $course_numbers, false);
+						print_r($this->courses[$output_course-1]);
+
+					} else {
+						$course = self::randomCourse($this->courses);
+						print_r($course);
+					}
+				} else {
+					echo UserInterface::NO_COURSES;
+				}
 				break;
 			case "8":
 				echo "***************\nOUTPUTTING COURSES TO CSV\n***************\n";
@@ -355,7 +381,6 @@ class Application {
 				break;
 			case "9":
 				echo "***************\nLOAD CSV TO DATABASE\n***************\n";
-				
 				$csv = new CSV();
 				$saved = $csv->readSavedData();
 				if ($saved) {

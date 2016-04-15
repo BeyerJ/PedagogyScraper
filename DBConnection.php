@@ -17,27 +17,16 @@
 
 		public static function getConnection() { //check if there's a connection and build one if there's none
 			if (empty(self::$mysql)) {
-				self::$mysql = new MySQLi(self::HOST, self::USER, self::PASSWORD, self::DATABASE);
-				self::$mysql->set_charset('utf8');
+				@self::$mysql = new MySQLi(self::HOST, self::USER, self::PASSWORD, self::DATABASE);
+				if (self::$mysql->connect_errno) {
+					echo "Failed to establish a database connection.\n";
+				} else {
+					self::$mysql->set_charset('utf8');
+				}
 			}
 
 			return self::$mysql;
 		}
-
-
-		/*
-		//OBJECT CONTEXT
-		$this->vegetable =4;
-		//PRONOUN $this
-		//ACCESSOR ->
-
-
-		//CLASS CONTEXT (or 'static context' or 'static reference')
-		self::$mysql = new MySQLi();
-		//PRONOUN self
-		//PRONOUN FOR PARENT parent
-		//ACCESSOR ::
-		*/
 	}
 
 ?>

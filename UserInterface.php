@@ -40,6 +40,10 @@ const BYE = "\n\n*************************\nThank you for using Pedagogy Scraper
 const GREETING = "\n\nThis is Pedagogy Scraper 1.0.\n\n";
 const NO_SCRAPER = "The scrapers I have don't work for this URL. Unable to proceed with scraping.\n\n\n";
 const NO_URL = "No URL input to work with.\n\n\n";
+const NO_COURSES = "There are currently no scraped courses in the application's memory.\n\n\n";
+
+const ECHO_COURSE = "How would you like to echo the course out?\n";
+const OUTPUT_PARTICULAR_COURSE = "Which course should be echoed? Input a number from 1 to how many scraped courses there currently are.\n";
 
 const SAVE_DATA_PROMPT = "Would you like to save the data to a CSV so you can edit it later?[yes/no]\n";
 const PULL_EDITED_DATA = "Would you like to retrieve edited data from a CSV?[yes/no]\n";
@@ -131,7 +135,7 @@ public function startScrape() {
 
 
 // ask yes or no question
-public function questionYN($prompt, $acknowledge) {
+public function questionYN($prompt, $acknowledge="OK") {
 	$answer = strtolower(self::userPrompt($prompt . " (y/n)\n"));
 	while (!array_key_exists($answer, self::$YESNO)) {
 		echo self::YES_NO_PROMPT;
